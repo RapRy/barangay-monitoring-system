@@ -1,5 +1,5 @@
 import { HTMLAttributes, forwardRef } from "react";
-import { cn } from "@/app/lib/utils/cn";
+import { cn } from "@/app/_lib/utils/cn";
 
 const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
@@ -8,12 +8,12 @@ const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
         ref={ref}
         className={cn(
           "rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm",
-          className
+          className,
         )}
         {...props}
       />
     );
-  }
+  },
 );
 
 Card.displayName = "Card";

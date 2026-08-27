@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/app/components/ui/button";
-import { PageHeader } from "@/app/components/ui/page-header";
-import { useToast } from "@/app/providers/toast-provider";
+import { Button } from "@/app/_components/ui/button";
+import { PageHeader } from "@/app/_components/ui/page-header";
+import { useToast } from "@/app/_providers/toast-provider";
 
 export default function HomePage() {
   const { showToast } = useToast();
@@ -15,12 +15,7 @@ export default function HomePage() {
       />
 
       <Button
-        onClick={() =>
-          showToast(
-            "This is a test notification.",
-            "success"
-          )
-        }
+        onClick={() => showToast("This is a test notification.", "success")}
       >
         Test Notification
       </Button>

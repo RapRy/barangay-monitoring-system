@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import { useField } from "formik";
 import { Label } from "./label";
-import { cn } from "@/app/lib/utils/cn";
+import { cn } from "@/app/_lib/utils/cn";
 
 interface FormFieldProps {
   name: string;
@@ -27,23 +27,15 @@ export function FormField({
       <Label htmlFor={name}>
         {label}
 
-        {required && (
-          <span className="ml-1 text-[var(--danger)]">*</span>
-        )}
+        {required && <span className="ml-1 text-[var(--danger)]">*</span>}
       </Label>
 
-      <div
-        className={cn(
-          hasError && "[&>input]:border-[var(--danger)]"
-        )}
-      >
+      <div className={cn(hasError && "[&>input]:border-[var(--danger)]")}>
         {children}
       </div>
 
       {hasError && (
-        <p className="mt-1 text-xs text-[var(--danger)]">
-          {meta.error}
-        </p>
+        <p className="mt-1 text-xs text-[var(--danger)]">{meta.error}</p>
       )}
     </div>
   );

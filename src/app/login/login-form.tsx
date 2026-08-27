@@ -4,12 +4,12 @@ import { Formik, Form, Field } from "formik";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { createClient } from "@/app/lib/supabase/client";
+import { createClient } from "@/app/_lib/supabase/client";
 
-import { Button } from "@/app/components/ui/button";
-import { Input } from "@/app/components/ui/input";
-import { FormField } from "@/app/components/ui/form-field";
-import { Alert } from "@/app/components/ui/alert";
+import { Button } from "@/app/_components/ui/button";
+import { Input } from "@/app/_components/ui/input";
+import { FormField } from "@/app/_components/ui/form-field";
+import { Alert } from "@/app/_components/ui/alert";
 import { loginSchema } from "@/app/login/schema";
 
 interface LoginValues {
@@ -35,7 +35,7 @@ export default function LoginForm() {
       setSubmitting,
     }: {
       setSubmitting: (isSubmitting: boolean) => void;
-    }
+    },
   ) {
     setServerError("");
 
@@ -79,17 +79,9 @@ export default function LoginForm() {
     >
       {({ isSubmitting }) => (
         <Form className="space-y-5">
-          {serverError && (
-            <Alert>
-              {serverError}
-            </Alert>
-          )}
+          {serverError && <Alert>{serverError}</Alert>}
 
-          <FormField
-            name="email"
-            label="Email"
-            required
-          >
+          <FormField name="email" label="Email" required>
             <Field
               as={Input}
               id="email"
@@ -100,11 +92,7 @@ export default function LoginForm() {
             />
           </FormField>
 
-          <FormField
-            name="password"
-            label="Password"
-            required
-          >
+          <FormField name="password" label="Password" required>
             <Field
               as={Input}
               id="password"
@@ -115,11 +103,7 @@ export default function LoginForm() {
             />
           </FormField>
 
-          <Button
-            type="submit"
-            loading={isSubmitting}
-            className="w-full"
-          >
+          <Button type="submit" loading={isSubmitting} className="w-full">
             {isSubmitting ? "Signing in..." : "Sign In"}
           </Button>
 
@@ -143,11 +127,7 @@ export default function LoginForm() {
             onClick={handleGoogleSignIn}
           >
             {!googleLoading && (
-              <svg
-                aria-hidden="true"
-                className="h-4 w-4"
-                viewBox="0 0 24 24"
-              >
+              <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
                   d="M21.35 12.27c0-.78-.07-1.53-.2-2.24H12v4.24h5.23a4.47 4.47 0 0 1-1.94 2.93v2.75h3.15c1.84-1.7 2.91-4.2 2.91-7.68Z"
@@ -166,7 +146,9 @@ export default function LoginForm() {
                 />
               </svg>
             )}
-            {googleLoading ? "Redirecting to Google..." : "Continue with Google"}
+            {googleLoading
+              ? "Redirecting to Google..."
+              : "Continue with Google"}
           </Button>
         </Form>
       )}

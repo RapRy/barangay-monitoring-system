@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { logout } from "@/app/lib/auth/logout";
-import { Button } from "@/app/components/ui/button";
-import { useToast } from "@/app/providers/toast-provider";
+import { logout } from "@/app/_lib/auth/logout";
+import { Button } from "@/app/_components/ui/button";
+import { useToast } from "@/app/_providers/toast-provider";
 
 export function LogoutButton() {
   const router = useRouter();

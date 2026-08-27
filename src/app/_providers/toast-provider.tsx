@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 
-import { Toast, ToastType } from "@/app/components/ui/toast";
+import { Toast, ToastType } from "@/app/_components/ui/toast";
 
 interface ToastItem {
   id: number;
@@ -17,51 +17,33 @@ interface ToastItem {
 }
 
 interface ToastContextValue {
-  showToast: (
-    message: string,
-    type?: ToastType
-  ) => void;
+  showToast: (message: string, type?: ToastType) => void;
 }
 
-const ToastContext =
-  createContext<ToastContextValue | null>(null);
+const ToastContext = createContext<ToastContextValue | null>(null);
 
-export function ToastProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const showToast = useCallback(
-    (
-      message: string,
-      type: ToastType = "info"
-    ) => {
-      const id = Date.now();
+  const showToast = useCallback((message: string, type: ToastType = "info") => {
+    const id = Date.now();
 
-      setToasts((current) => [
-        ...current,
-        {
-          id,
-          message,
-          type,
-        },
-      ]);
+    setToasts((current) => [
+      ...current,
+      {
+        id,
+        message,
+        type,
+      },
+    ]);
 
-      setTimeout(() => {
-        setToasts((current) =>
-          current.filter((toast) => toast.id !== id)
-        );
-      }, 4000);
-    },
-    []
-  );
+    setTimeout(() => {
+      setToasts((current) => current.filter((toast) => toast.id !== id));
+    }, 4000);
+  }, []);
 
   function removeToast(id: number) {
-    setToasts((current) =>
-      current.filter((toast) => toast.id !== id)
-    );
+    setToasts((current) => current.filter((toast) => toast.id !== id));
   }
 
   return (
@@ -86,9 +68,7 @@ export function useToast() {
   const context = useContext(ToastContext);
 
   if (!context) {
-    throw new Error(
-      "useToast must be used inside ToastProvider"
-    );
+    throw new Error("useToast must be used inside ToastProvider");
   }
 
   return context;

@@ -1,5 +1,5 @@
-import { schema } from "@/app/lib/graphql/schema";
-import { createGraphQLContext } from "@/app/lib/graphql/context";
+import { schema } from "@/app/_lib/graphql/schema";
+import { createGraphQLContext } from "@/app/_lib/graphql/context";
 import { createYoga } from "graphql-yoga";
 
 const yoga = createYoga({

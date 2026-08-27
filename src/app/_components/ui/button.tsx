@@ -1,12 +1,8 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
-import { cn } from "@/app/lib/utils/cn";
-import { Spinner } from "@/app/components/ui/spinner";
+import { cn } from "@/app/_lib/utils/cn";
+import { Spinner } from "@/app/_components/ui/spinner";
 
-type ButtonVariant =
-  | "primary"
-  | "secondary"
-  | "outline"
-  | "danger";
+type ButtonVariant = "primary" | "secondary" | "outline" | "danger";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -24,7 +20,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <button
@@ -48,7 +44,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           variant === "danger" &&
             "bg-[var(--danger)] text-white hover:opacity-90",
 
-          className
+          className,
         )}
         {...props}
       >
@@ -56,7 +52,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {children}
       </button>
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

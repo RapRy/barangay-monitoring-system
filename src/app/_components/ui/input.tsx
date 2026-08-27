@@ -1,5 +1,5 @@
 import { InputHTMLAttributes, forwardRef } from "react";
-import { cn } from "@/app/lib/utils/cn";
+import { cn } from "@/app/_lib/utils/cn";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
@@ -19,12 +19,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ? "border-[var(--danger)]"
             : "border-[var(--border)] focus:border-[var(--primary)]",
           "disabled:cursor-not-allowed disabled:bg-slate-100",
-          className
+          className,
         )}
         {...props}
       />
     );
-  }
+  },
 );
 
 Input.displayName = "Input";

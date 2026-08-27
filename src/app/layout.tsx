@@ -7,8 +7,8 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-import QueryProvider from "@/app/providers/query-provider";
-import { ToastProvider } from "@/app/providers/toast-provider";
+import QueryProvider from "@/app/_providers/query-provider";
+import { ToastProvider } from "@/app/_providers/toast-provider";
 
 export const metadata: Metadata = {
   title: "Barangay Monitoring System",

@@ -1,4 +1,4 @@
-import { createClient } from "@/app/lib/supabase/client";
+import { createClient } from "@/app/_lib/supabase/client";
 
 export async function logout() {
   const supabase = createClient();

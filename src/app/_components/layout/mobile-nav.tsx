@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-import { cn } from "@/app/lib/utils/cn";
+import { cn } from "@/app/_lib/utils/cn";
 
 const navigation = [
   {
@@ -69,9 +69,7 @@ export function MobileNav() {
           <aside className="relative h-full w-72 bg-white shadow-xl">
             <div className="flex h-16 items-center justify-between border-b border-[var(--border)] px-5">
               <div>
-                <p className="font-semibold">
-                  Barangay Monitoring
-                </p>
+                <p className="font-semibold">Barangay Monitoring</p>
 
                 <p className="text-xs text-[var(--muted)]">
                   Community Information System
@@ -110,7 +108,7 @@ export function MobileNav() {
                       "block rounded-lg px-3 py-3 text-sm font-medium",
                       active
                         ? "bg-teal-50 text-[var(--primary)]"
-                        : "text-slate-600 hover:bg-slate-50"
+                        : "text-slate-600 hover:bg-slate-50",
                     )}
                   >
                     {item.label}

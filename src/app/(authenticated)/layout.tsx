@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-import { createClient } from "@/app/lib/supabase/server";
-import { AppShell } from "@/app/components/layout/app-shell";
+import { createClient } from "@/app/_lib/supabase/server";
+import { AppShell } from "@/app/_components/layout/app-shell";
 
 export default async function AuthenticatedLayout({
   children,
@@ -18,9 +18,5 @@ export default async function AuthenticatedLayout({
     redirect("/login");
   }
 
-  return (
-    <AppShell email={user.email}>
-      {children}
-    </AppShell>
-  );
+  return <AppShell email={user.email}>{children}</AppShell>;
 }

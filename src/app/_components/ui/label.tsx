@@ -1,5 +1,5 @@
 import { LabelHTMLAttributes, forwardRef } from "react";
-import { cn } from "@/app/lib/utils/cn";
+import { cn } from "@/app/_lib/utils/cn";
 
 const Label = forwardRef<
   HTMLLabelElement,
@@ -10,7 +10,7 @@ const Label = forwardRef<
       ref={ref}
       className={cn(
         "mb-1.5 block text-sm font-medium text-[var(--foreground)]",
-        className
+        className,
       )}
       {...props}
     />

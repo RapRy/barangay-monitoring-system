@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/app/lib/utils/cn";
+import { cn } from "@/app/_lib/utils/cn";
 
 const navigation = [
   {
@@ -34,9 +34,7 @@ export function Sidebar() {
     <aside className="hidden w-64 shrink-0 border-r border-[var(--border)] bg-white lg:block">
       <div className="flex h-16 items-center border-b border-[var(--border)] px-6">
         <div>
-          <p className="font-semibold">
-            Barangay Monitoring
-          </p>
+          <p className="font-semibold">Barangay Monitoring</p>
 
           <p className="text-xs text-[var(--muted)]">
             Community Information System
@@ -56,7 +54,7 @@ export function Sidebar() {
                 "block rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 active
                   ? "bg-teal-50 text-[var(--primary)]"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
               )}
             >
               {item.label}
