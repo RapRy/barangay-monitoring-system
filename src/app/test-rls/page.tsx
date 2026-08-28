@@ -1,4 +1,4 @@
-import { createClient } from "@/app/lib/supabase/server";
+import { createClient } from "@/app/_lib/supabase/server";
 
 export default async function TestRLSPage() {
   //   const [result, setResult] = useState<unknown>(null);

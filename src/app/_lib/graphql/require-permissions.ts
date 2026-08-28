@@ -1,6 +1,6 @@
-import { GraphQLError } from "graphql";
-
 import type { GraphQLContext } from "./context";
+import { forbidden, internalServerError } from "./errors";
+import { requireAuthenticatedUser } from "./auth/require-authenticated-user";
 
 export async function requirePermission(
   context: GraphQLContext,
@@ -8,20 +8,12 @@ export async function requirePermission(
 ): Promise<void> {
   // 1. User must be authenticated
   if (!context.user) {
-    throw new GraphQLError("You must be logged in to perform this action.", {
-      extensions: {
-        code: "UNAUTHENTICATED",
-      },
-    });
+    requireAuthenticatedUser(context);
   }
 
   // 2. User must have a role
   if (!context.role) {
-    throw new GraphQLError("User does not have an assigned role.", {
-      extensions: {
-        code: "FORBIDDEN",
-      },
-    });
+    throw forbidden("User does not have an assigned role.");
   }
 
   // 3. Find the permission
@@ -34,19 +26,11 @@ export async function requirePermission(
   if (permissionError) {
     console.error("Permission lookup failed:", permissionError);
 
-    throw new GraphQLError("Unable to verify permissions.", {
-      extensions: {
-        code: "INTERNAL_SERVER_ERROR",
-      },
-    });
+    throw internalServerError("Unable to verify permissions.");
   }
 
   if (!permission) {
-    throw new GraphQLError(`Permission "${permissionName}" does not exist.`, {
-      extensions: {
-        code: "INTERNAL_SERVER_ERROR",
-      },
-    });
+    throw internalServerError(`Permission "${permissionName}" does not exist.`);
   }
 
   // 4. Find the user's role
@@ -59,19 +43,11 @@ export async function requirePermission(
   if (roleError) {
     console.error("Role lookup failed:", roleError);
 
-    throw new GraphQLError("Unable to verify user role.", {
-      extensions: {
-        code: "INTERNAL_SERVER_ERROR",
-      },
-    });
+    throw internalServerError("Unable to verify user role.");
   }
 
   if (!role) {
-    throw new GraphQLError("User role does not exist.", {
-      extensions: {
-        code: "INTERNAL_SERVER_ERROR",
-      },
-    });
+    throw internalServerError("User role does not exist.");
   }
 
   // 5. Check role_permissions
@@ -85,23 +61,11 @@ export async function requirePermission(
 
   if (rolePermissionError) {
     console.error("Role permission lookup failed:", rolePermissionError);
-
-    throw new GraphQLError("Unable to verify permissions.", {
-      extensions: {
-        code: "INTERNAL_SERVER_ERROR",
-      },
-    });
+    throw internalServerError("Unable to verify permissions");
   }
 
   // 6. Permission denied
   if (!rolePermission) {
-    throw new GraphQLError(
-      "You do not have permission to perform this action.",
-      {
-        extensions: {
-          code: "FORBIDDEN",
-        },
-      },
-    );
+    throw forbidden("You do not have permission to perform this action.");
   }
 }

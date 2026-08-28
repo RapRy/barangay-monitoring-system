@@ -1,12 +1,7 @@
 import { createSchema } from "graphql-yoga";
-import { User } from "@supabase/supabase-js";
+import { GraphQLError } from "graphql";
 import { requirePermission } from "./require-permissions";
 
-import {
-  requireAuthenticatedUser,
-  requireRole,
-  throwDatabaseError,
-} from "./authorization";
 import type { GraphQLContext } from "./context";
 
 type HouseholdRow = {
@@ -104,6 +99,7 @@ export const schema = createSchema<GraphQLContext>({
     type Query {
       me: User
       households: [Household!]!
+      household(id: ID): Household!
       residents(householdId: ID): [Resident!]!
       testHouseholdCreatePermission: Boolean!
     }
@@ -119,11 +115,6 @@ export const schema = createSchema<GraphQLContext>({
   `,
 
   resolvers: {
-    User: {
-      role: (user: { role: string | null }) =>
-        user.role ? user.role.toUpperCase() : null,
-    },
-
     Query: {
       me: (_parent, _args, context) => {
         if (!context.user) {
@@ -144,198 +135,143 @@ export const schema = createSchema<GraphQLContext>({
       },
 
       households: async (_parent, _args, context) => {
-        requireAuthenticatedUser(context);
+        await requirePermission(context, "household.read");
 
         const { data, error } = await context.supabase
           .from("households")
           .select("*")
-          .order("created_at", { ascending: false });
+          .order("created_at", {
+            ascending: false,
+          });
 
         if (error) {
-          throwDatabaseError(error.message);
+          throw new GraphQLError("Failed to fetch households.", {
+            extensions: {
+              code: "INTERNAL_SERVER_ERROR",
+            },
+          });
         }
 
-        return (data as HouseholdRow[]).map(toHousehold);
+        return data;
       },
 
-      residents: async (_parent, args: { householdId?: string }, context) => {
-        requireAuthenticatedUser(context);
+      household: async (_parent, { id }, context) => {
+        await requirePermission(context, "household.read");
 
-        let query = context.supabase
-          .from("residents")
+        const { data, error } = await context.supabase
+          .from("households")
           .select("*")
-          .order("last_name", { ascending: true });
-
-        if (args.householdId) {
-          query = query.eq("household_id", args.householdId);
-        }
-
-        const { data, error } = await query;
+          .eq("id", id)
+          .maybeSingle();
 
         if (error) {
-          throwDatabaseError(error.message);
+          throw new GraphQLError("Failed to fetch household.", {
+            extensions: {
+              code: "INTERNAL_SERVER_ERROR",
+            },
+          });
         }
 
-        return (data as ResidentRow[]).map(toResident);
+        return data;
       },
     },
 
     Mutation: {
-      createHousehold: async (
-        _parent,
-        args: { input: { householdNo: string; address: string } },
-        context,
-      ) => {
-        requireRole(context, ["admin", "staff"]);
+      createHousehold: async (_parent, { input }, context) => {
+        await requirePermission(context, "household.create");
 
         const { data, error } = await context.supabase
           .from("households")
           .insert({
-            household_no: args.input.householdNo,
-            address: args.input.address,
+            household_code: input.householdCode,
+            address: input.address,
+            purok: input.purok,
+            barangay: input.barangay,
+            municipality: input.municipality,
+            province: input.province,
           })
           .select()
           .single();
 
         if (error) {
-          throwDatabaseError(error.message);
+          console.error("Create household failed:", error);
+
+          throw new GraphQLError("Failed to create household.", {
+            extensions: {
+              code: "INTERNAL_SERVER_ERROR",
+            },
+          });
         }
 
-        return toHousehold(data as HouseholdRow);
+        return data;
       },
 
-      updateHousehold: async (
-        _parent,
-        args: { id: string; input: { householdNo: string; address: string } },
-        context,
-      ) => {
-        requireRole(context, ["admin", "staff"]);
+      updateHousehold: async (_parent, { id, input }, context) => {
+        await requirePermission(context, "household.update");
 
         const { data, error } = await context.supabase
           .from("households")
           .update({
-            household_no: args.input.householdNo,
-            address: args.input.address,
+            ...(input.householdCode !== undefined && {
+              household_code: input.householdCode,
+            }),
+
+            ...(input.address !== undefined && {
+              address: input.address,
+            }),
+
+            ...(input.purok !== undefined && {
+              purok: input.purok,
+            }),
+
+            ...(input.barangay !== undefined && {
+              barangay: input.barangay,
+            }),
+
+            ...(input.municipality !== undefined && {
+              municipality: input.municipality,
+            }),
+
+            ...(input.province !== undefined && {
+              province: input.province,
+            }),
           })
-          .eq("id", args.id)
+          .eq("id", id)
           .select()
           .single();
 
         if (error) {
-          throwDatabaseError(error.message);
+          console.error("Update household failed:", error);
+
+          throw new GraphQLError("Failed to update household.", {
+            extensions: {
+              code: "INTERNAL_SERVER_ERROR",
+            },
+          });
         }
 
-        return toHousehold(data as HouseholdRow);
+        return data;
       },
 
-      deleteHousehold: async (_parent, args: { id: string }, context) => {
-        requireRole(context, ["admin"]);
+      deleteHousehold: async (_parent, { id }, context) => {
+        await requirePermission(context, "household.delete");
 
-        const { data, error } = await context.supabase
+        const { error } = await context.supabase
           .from("households")
           .delete()
-          .eq("id", args.id)
-          .select("id");
+          .eq("id", id);
 
         if (error) {
-          throwDatabaseError(error.message);
+          console.error("Delete household failed:", error);
+
+          throw new GraphQLError("Failed to delete household.", {
+            extensions: {
+              code: "INTERNAL_SERVER_ERROR",
+            },
+          });
         }
 
-        return data.length > 0;
-      },
-
-      createResident: async (
-        _parent,
-        args: {
-          input: {
-            householdId: string;
-            firstName: string;
-            middleName?: string | null;
-            lastName: string;
-            birthDate: string;
-            sex: string;
-            relationship: string;
-          };
-        },
-        context,
-      ) => {
-        requireRole(context, ["admin", "staff"]);
-
-        const { data, error } = await context.supabase
-          .from("residents")
-          .insert({
-            household_id: args.input.householdId,
-            first_name: args.input.firstName,
-            middle_name: args.input.middleName ?? null,
-            last_name: args.input.lastName,
-            birth_date: args.input.birthDate,
-            sex: args.input.sex,
-            relationship: args.input.relationship,
-          })
-          .select()
-          .single();
-
-        if (error) {
-          throwDatabaseError(error.message);
-        }
-
-        return toResident(data as ResidentRow);
-      },
-
-      updateResident: async (
-        _parent,
-        args: {
-          id: string;
-          input: {
-            householdId: string;
-            firstName: string;
-            middleName?: string | null;
-            lastName: string;
-            birthDate: string;
-            sex: string;
-            relationship: string;
-          };
-        },
-        context,
-      ) => {
-        requireRole(context, ["admin", "staff"]);
-
-        const { data, error } = await context.supabase
-          .from("residents")
-          .update({
-            household_id: args.input.householdId,
-            first_name: args.input.firstName,
-            middle_name: args.input.middleName ?? null,
-            last_name: args.input.lastName,
-            birth_date: args.input.birthDate,
-            sex: args.input.sex,
-            relationship: args.input.relationship,
-          })
-          .eq("id", args.id)
-          .select()
-          .single();
-
-        if (error) {
-          throwDatabaseError(error.message);
-        }
-
-        return toResident(data as ResidentRow);
-      },
-
-      deleteResident: async (_parent, args: { id: string }, context) => {
-        requireRole(context, ["admin"]);
-
-        const { data, error } = await context.supabase
-          .from("residents")
-          .delete()
-          .eq("id", args.id)
-          .select("id");
-
-        if (error) {
-          throwDatabaseError(error.message);
-        }
-
-        return data.length > 0;
+        return true;
       },
     },
   },
