@@ -1,5 +1,4 @@
 import { createSchema } from "graphql-yoga";
-import { GraphQLError } from "graphql";
 import { requirePermission } from "./require-permissions";
 import {
   createHouseholdSchema,
@@ -26,38 +25,23 @@ export const schema = createSchema<GraphQLContext>({
 
     type Household {
       id: ID!
-      household_no: String!
+      household_code: String!
       address: String!
-      createdAt: String!
-      updatedAt: String!
-    }
-
-    type Resident {
-      id: ID!
-      householdId: ID!
-      firstName: String!
-      middleName: String
-      lastName: String!
-      birthDate: String!
-      sex: String!
-      relationship: String!
-      createdAt: String!
-      updatedAt: String!
+      purok: String!
+      barangay: String!
+      sector: String!
+      municipality: String!
+      created_at: String!
+      updated_at: String!
     }
 
     input HouseholdInput {
-      household_no: String!
+      household_code: String!
       address: String!
-    }
-
-    input ResidentInput {
-      householdId: ID!
-      firstName: String!
-      middleName: String
-      lastName: String!
-      birthDate: String!
-      sex: String!
-      relationship: String!
+      purok: String!
+      barangay: String!
+      sector: String!
+      municipality: String!
     }
 
     type Query {
