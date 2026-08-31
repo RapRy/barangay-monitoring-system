@@ -1,50 +1,14 @@
 import { createSchema } from "graphql-yoga";
 import { GraphQLError } from "graphql";
 import { requirePermission } from "./require-permissions";
+import {
+  createHouseholdSchema,
+  updateHouseholdSchema,
+} from "../validation/household";
 
 import type { GraphQLContext } from "./context";
-
-type HouseholdRow = {
-  id: string;
-  household_no: string;
-  address: string;
-  created_at: string;
-  updated_at: string;
-};
-
-type ResidentRow = {
-  id: string;
-  household_id: string;
-  first_name: string;
-  middle_name: string | null;
-  last_name: string;
-  birth_date: string;
-  sex: string;
-  relationship: string;
-  created_at: string;
-  updated_at: string;
-};
-
-const toHousehold = (household: HouseholdRow) => ({
-  id: household.id,
-  householdNo: household.household_no,
-  address: household.address,
-  createdAt: household.created_at,
-  updatedAt: household.updated_at,
-});
-
-const toResident = (resident: ResidentRow) => ({
-  id: resident.id,
-  householdId: resident.household_id,
-  firstName: resident.first_name,
-  middleName: resident.middle_name,
-  lastName: resident.last_name,
-  birthDate: resident.birth_date,
-  sex: resident.sex,
-  relationship: resident.relationship,
-  createdAt: resident.created_at,
-  updatedAt: resident.updated_at,
-});
+import { badUserInput, notFound } from "./errors";
+import { handleSupabaseError } from "./database-error";
 
 export const schema = createSchema<GraphQLContext>({
   typeDefs: /* GraphQL */ `
@@ -62,7 +26,7 @@ export const schema = createSchema<GraphQLContext>({
 
     type Household {
       id: ID!
-      householdNo: String!
+      household_no: String!
       address: String!
       createdAt: String!
       updatedAt: String!
@@ -82,7 +46,7 @@ export const schema = createSchema<GraphQLContext>({
     }
 
     input HouseholdInput {
-      householdNo: String!
+      household_no: String!
       address: String!
     }
 
@@ -145,11 +109,7 @@ export const schema = createSchema<GraphQLContext>({
           });
 
         if (error) {
-          throw new GraphQLError("Failed to fetch households.", {
-            extensions: {
-              code: "INTERNAL_SERVER_ERROR",
-            },
-          });
+          throw handleSupabaseError(error);
         }
 
         return data;
@@ -164,12 +124,10 @@ export const schema = createSchema<GraphQLContext>({
           .eq("id", id)
           .maybeSingle();
 
+        if (!data || data.length === 0) throw notFound("Household not found");
+
         if (error) {
-          throw new GraphQLError("Failed to fetch household.", {
-            extensions: {
-              code: "INTERNAL_SERVER_ERROR",
-            },
-          });
+          throw handleSupabaseError(error);
         }
 
         return data;
@@ -180,28 +138,26 @@ export const schema = createSchema<GraphQLContext>({
       createHousehold: async (_parent, { input }, context) => {
         await requirePermission(context, "household.create");
 
+        const result = createHouseholdSchema.safeParse(input);
+
+        if (!result.success) {
+          throw badUserInput(
+            result.error.issues[0].message ?? "Invalid Household data.",
+          );
+        }
+
+        const validatedInput = result.data;
+
         const { data, error } = await context.supabase
           .from("households")
           .insert({
-            household_code: input.householdCode,
-            address: input.address,
-            purok: input.purok,
-            barangay: input.barangay,
-            municipality: input.municipality,
-            province: input.province,
+            household_no: validatedInput.household_no,
+            address: validatedInput.address,
           })
           .select()
           .single();
 
-        if (error) {
-          console.error("Create household failed:", error);
-
-          throw new GraphQLError("Failed to create household.", {
-            extensions: {
-              code: "INTERNAL_SERVER_ERROR",
-            },
-          });
-        }
+        if (error) throw handleSupabaseError(error);
 
         return data;
       },
@@ -209,46 +165,34 @@ export const schema = createSchema<GraphQLContext>({
       updateHousehold: async (_parent, { id, input }, context) => {
         await requirePermission(context, "household.update");
 
+        const result = updateHouseholdSchema.safeParse(input);
+
+        if (!result.success) {
+          throw badUserInput(
+            result.error.issues[0].message ?? "Invalid Household data.",
+          );
+        }
+
+        const validatedInput = result.data;
+
         const { data, error } = await context.supabase
           .from("households")
           .update({
-            ...(input.householdCode !== undefined && {
-              household_code: input.householdCode,
+            ...(validatedInput.household_no !== undefined && {
+              household_no: validatedInput.household_no,
             }),
 
-            ...(input.address !== undefined && {
-              address: input.address,
-            }),
-
-            ...(input.purok !== undefined && {
-              purok: input.purok,
-            }),
-
-            ...(input.barangay !== undefined && {
-              barangay: input.barangay,
-            }),
-
-            ...(input.municipality !== undefined && {
-              municipality: input.municipality,
-            }),
-
-            ...(input.province !== undefined && {
-              province: input.province,
+            ...(validatedInput.address !== undefined && {
+              address: validatedInput.address,
             }),
           })
           .eq("id", id)
           .select()
-          .single();
+          .maybeSingle();
 
-        if (error) {
-          console.error("Update household failed:", error);
+        if (error) throw handleSupabaseError(error);
 
-          throw new GraphQLError("Failed to update household.", {
-            extensions: {
-              code: "INTERNAL_SERVER_ERROR",
-            },
-          });
-        }
+        if (!data) throw notFound("Household not found");
 
         return data;
       },
@@ -256,20 +200,14 @@ export const schema = createSchema<GraphQLContext>({
       deleteHousehold: async (_parent, { id }, context) => {
         await requirePermission(context, "household.delete");
 
-        const { error } = await context.supabase
+        const { data, error } = await context.supabase
           .from("households")
           .delete()
           .eq("id", id);
 
-        if (error) {
-          console.error("Delete household failed:", error);
+        if (error) throw handleSupabaseError(error);
 
-          throw new GraphQLError("Failed to delete household.", {
-            extensions: {
-              code: "INTERNAL_SERVER_ERROR",
-            },
-          });
-        }
+        if (!data || data.length === 0) throw notFound("Household not found");
 
         return true;
       },
