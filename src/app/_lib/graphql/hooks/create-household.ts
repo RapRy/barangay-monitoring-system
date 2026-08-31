@@ -8,8 +8,13 @@ import type { Household } from "../queries/households";
 import { queryKeys } from "../query-keys";
 
 interface CreateHouseholdInput {
-  household_no: string;
+  household_code: string;
   address: string;
+  postal_code: string;
+  purok: string;
+  barangay: string;
+  municipality: string;
+  province: string;
 }
 
 interface CreateHouseholdResponse {

@@ -25,30 +25,30 @@ export const schema = createSchema<GraphQLContext>({
 
     type Household {
       id: ID!
-      household_code: String!
-      address: String!
-      purok: String!
-      barangay: String!
-      sector: String!
-      municipality: String!
+      household_code: String
+      address: String
+      purok: String
+      barangay: String
+      municipality: String
+      postal_code: String
       created_at: String!
       updated_at: String!
     }
 
     input HouseholdInput {
-      household_code: String!
-      address: String!
-      purok: String!
-      barangay: String!
-      sector: String!
-      municipality: String!
+      household_code: String
+      address: String
+      purok: String
+      barangay: String
+      postal_code: String
+      municipality: String
+      province: String
     }
 
     type Query {
       me: User
       households: [Household!]!
       household(id: ID): Household!
-      residents(householdId: ID): [Resident!]!
       testHouseholdCreatePermission: Boolean!
     }
 
@@ -56,9 +56,6 @@ export const schema = createSchema<GraphQLContext>({
       createHousehold(input: HouseholdInput!): Household!
       updateHousehold(id: ID!, input: HouseholdInput!): Household!
       deleteHousehold(id: ID!): Boolean!
-      createResident(input: ResidentInput!): Resident!
-      updateResident(id: ID!, input: ResidentInput!): Resident!
-      deleteResident(id: ID!): Boolean!
     }
   `,
 
@@ -135,8 +132,13 @@ export const schema = createSchema<GraphQLContext>({
         const { data, error } = await context.supabase
           .from("households")
           .insert({
-            household_no: validatedInput.household_no,
+            household_code: validatedInput.household_code,
             address: validatedInput.address,
+            purok: validatedInput.purok,
+            barangay: validatedInput.barangay,
+            municipality: validatedInput.municipality,
+            postal_code: validatedInput.postal_code,
+            province: validatedInput.province,
           })
           .select()
           .single();
@@ -162,8 +164,8 @@ export const schema = createSchema<GraphQLContext>({
         const { data, error } = await context.supabase
           .from("households")
           .update({
-            ...(validatedInput.household_no !== undefined && {
-              household_no: validatedInput.household_no,
+            ...(validatedInput.household_code !== undefined && {
+              household_no: validatedInput.household_code,
             }),
 
             ...(validatedInput.address !== undefined && {

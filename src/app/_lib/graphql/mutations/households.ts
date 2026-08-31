@@ -2,7 +2,7 @@ export const CREATE_HOUSEHOLD = `
   mutation CreateHousehold($input: CreateHouseholdInput!) {
     createHousehold(input: $input) {
       id
-      householdCode
+      household_code
       address
       purok
       barangay
@@ -23,7 +23,7 @@ export const UPDATE_HOUSEHOLD = `
       input: $input
     ) {
       id
-      householdCode
+      household_code
       address
       purok
       barangay

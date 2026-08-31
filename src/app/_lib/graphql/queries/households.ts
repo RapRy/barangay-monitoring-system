@@ -3,7 +3,7 @@ export interface Household {
   household_code: string;
   address: string | null;
   purok: string;
-  sector: string | null;
+  postal_code: string;
   barangay: string;
   municipality: string;
   created_at: string;
@@ -16,7 +16,7 @@ export const GET_HOUSEHOLDS = `
         household_code
         address
         purok
-        sector
+        postal_code
         barangay
         municipality
         created_at
