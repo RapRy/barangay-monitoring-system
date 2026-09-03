@@ -2,11 +2,11 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { graphqlRequest } from "../client";
-import { UPDATE_HOUSEHOLD } from "../mutations/households";
-import { queryKeys } from "../query-keys";
+import { graphqlRequest } from "../../client";
+import { UPDATE_HOUSEHOLD } from "../../mutations/households";
+import { queryKeys } from "../../query-keys";
 
-import type { Household } from "../queries/households";
+import type { Household } from "../../queries/households";
 
 interface UpdateHouseholdInput {
   household_code?: string;

@@ -1,5 +1,5 @@
 export const CREATE_HOUSEHOLD = `
-  mutation CreateHousehold($input: CreateHouseholdInput!) {
+  mutation CreateHousehold($input: HouseholdInput!) {
     createHousehold(input: $input) {
       id
       household_code
@@ -8,7 +8,8 @@ export const CREATE_HOUSEHOLD = `
       barangay
       municipality
       province
-      createdAt
+      postal_code
+      created_at
     }
   }
 `;
@@ -16,7 +17,7 @@ export const CREATE_HOUSEHOLD = `
 export const UPDATE_HOUSEHOLD = `
   mutation UpdateHousehold(
     $id: ID!
-    $input: UpdateHouseholdInput!
+    $input: HouseholdInput!
   ) {
     updateHousehold(
       id: $id
@@ -29,7 +30,7 @@ export const UPDATE_HOUSEHOLD = `
       barangay
       municipality
       province
-      createdAt
+      created_at
     }
   }
 `;

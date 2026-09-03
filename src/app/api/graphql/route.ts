@@ -3,6 +3,17 @@ import { createGraphQLContext } from "@/app/_lib/graphql/context";
 import { createYoga } from "graphql-yoga";
 import { GraphQLError } from "graphql/error";
 
+type GraphQLErrorLike = {
+  message: string;
+  extensions?: {
+    code?: unknown;
+  };
+};
+
+function isGraphQLErrorLike(error: unknown): error is GraphQLErrorLike {
+  return typeof error === "object" && error !== null && "message" in error;
+}
+
 const yoga = createYoga({
   schema,
   context: createGraphQLContext,
@@ -11,8 +22,11 @@ const yoga = createYoga({
     maskError(error) {
       console.error("GraphQL error:", error);
 
-      if (error instanceof GraphQLError) {
+      if (isGraphQLErrorLike(error)) {
         const code = error.extensions?.code;
+
+        console.error("Message:", error.message);
+        console.error("Code:", code);
 
         if (
           code === "UNAUTHENTICATED" ||
@@ -21,11 +35,17 @@ const yoga = createYoga({
           code === "NOT_FOUND" ||
           code === "CONFLICT"
         ) {
-          return error;
+          return new GraphQLError(error.message, {
+            extensions: { code },
+          });
         }
       }
 
-      return new Error("An unexpected error occurred.");
+      return new GraphQLError("An unexpected error occurred.", {
+        extensions: {
+          code: "INTERNAL_SERVER_ERROR",
+        },
+      });
     },
   },
 });

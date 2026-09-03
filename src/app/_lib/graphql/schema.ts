@@ -31,6 +31,7 @@ export const schema = createSchema<GraphQLContext>({
       barangay: String
       municipality: String
       postal_code: String
+      province: String
       created_at: String!
       updated_at: String!
     }

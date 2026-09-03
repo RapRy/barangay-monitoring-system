@@ -2,13 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { graphqlRequest } from "../client";
+import { graphqlRequest } from "../../client";
 
 import {
   GET_HOUSEHOLDS,
   type GetHouseholdsResponse,
-} from "../queries/households";
-import { queryKeys } from "../query-keys";
+} from "../../queries/households";
+import { queryKeys } from "../../query-keys";
 
 export function useHouseholds() {
   return useQuery({

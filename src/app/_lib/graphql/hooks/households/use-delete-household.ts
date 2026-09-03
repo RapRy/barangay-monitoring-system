@@ -2,9 +2,9 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { graphqlRequest } from "../client";
-import { DELETE_HOUSEHOLD } from "../mutations/households";
-import { queryKeys } from "../query-keys";
+import { graphqlRequest } from "../../client";
+import { DELETE_HOUSEHOLD } from "../../mutations/households";
+import { queryKeys } from "../../query-keys";
 
 interface DeleteHouseholdResponse {
   deleteHousehold: boolean;
