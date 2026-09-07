@@ -67,10 +67,16 @@ export const schema = createSchema<GraphQLContext>({
           return null;
         }
 
+        const roleMap = {
+          admin: "ADMIN",
+          staff: "STAFF",
+          viewer: "VIEWER",
+        } as const;
+
         return {
           id: context.user.id,
           email: context.user.email,
-          role: context.role,
+          role: context.role ? roleMap[context.role] : null,
         };
       },
 

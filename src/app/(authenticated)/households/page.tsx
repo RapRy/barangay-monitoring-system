@@ -9,6 +9,7 @@ import { Modal } from "@/app/_components/ui/modal";
 import { Toast, type ToastType } from "@/app/_components/ui/toast";
 
 import CreateHouseholdForm from "@/app/_components/households/create-household-form";
+import { useCurrentUser } from "@/app/_lib/graphql/hooks/use-current-user";
 
 interface ToastState {
   message: string;
@@ -17,6 +18,10 @@ interface ToastState {
 
 export default function HouseholdsPage() {
   const { data: households, isLoading, isError, error } = useHouseholds();
+  const { data: user } = useCurrentUser();
+
+  const canCreateHousehold = user?.role === "ADMIN" || user?.role === "STAFF";
+  console.log(user);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
@@ -62,9 +67,11 @@ export default function HouseholdsPage() {
             </p>
           </div>
 
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            Create Household
-          </Button>
+          {canCreateHousehold && (
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              Create Household
+            </Button>
+          )}
         </div>
 
         {/* Table */}
