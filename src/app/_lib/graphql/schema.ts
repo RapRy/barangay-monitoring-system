@@ -172,11 +172,25 @@ export const schema = createSchema<GraphQLContext>({
           .from("households")
           .update({
             ...(validatedInput.household_code !== undefined && {
-              household_no: validatedInput.household_code,
+              household_code: validatedInput.household_code,
             }),
-
             ...(validatedInput.address !== undefined && {
               address: validatedInput.address,
+            }),
+            ...(validatedInput.purok !== undefined && {
+              purok: validatedInput.purok,
+            }),
+            ...(validatedInput.barangay !== undefined && {
+              barangay: validatedInput.barangay,
+            }),
+            ...(validatedInput.municipality !== undefined && {
+              municipality: validatedInput.municipality,
+            }),
+            ...(validatedInput.province !== undefined && {
+              province: validatedInput.province,
+            }),
+            ...(validatedInput.postal_code !== undefined && {
+              postal_code: validatedInput.postal_code,
             }),
           })
           .eq("id", id)
@@ -196,7 +210,8 @@ export const schema = createSchema<GraphQLContext>({
         const { data, error } = await context.supabase
           .from("households")
           .delete()
-          .eq("id", id);
+          .eq("id", id)
+          .select("id");
 
         if (error) throw handleSupabaseError(error);
 

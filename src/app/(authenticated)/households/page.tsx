@@ -3,12 +3,15 @@
 import { useState } from "react";
 
 import { useHouseholds } from "@/app/_lib/graphql/hooks/households/use-households";
+import { useDeleteHousehold } from "@/app/_lib/graphql/hooks/households/use-delete-household";
+import type { Household } from "@/app/_lib/graphql/queries/households";
 
 import { Button } from "@/app/_components/ui/button";
 import { Modal } from "@/app/_components/ui/modal";
 import { Toast, type ToastType } from "@/app/_components/ui/toast";
 
 import CreateHouseholdForm from "@/app/_components/households/create-household-form";
+import EditHouseholdForm from "@/app/_components/households/edit-household-form";
 import { useCurrentUser } from "@/app/_lib/graphql/hooks/use-current-user";
 
 interface ToastState {
@@ -18,12 +21,21 @@ interface ToastState {
 
 export default function HouseholdsPage() {
   const { data: households, isLoading, isError, error } = useHouseholds();
+  const deleteHousehold = useDeleteHousehold();
   const { data: user } = useCurrentUser();
 
-  const canCreateHousehold = user?.role === "ADMIN" || user?.role === "STAFF";
-  console.log(user);
+  const canCreateEditHousehold =
+    user?.role === "ADMIN" || user?.role === "STAFF";
+  const canDeleteHousehold = user?.role === "ADMIN";
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedHousehold, setSelectedHousehold] = useState<Household | null>(
+    null,
+  );
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [householdToDelete, setHouseholdToDelete] = useState<Household | null>(
+    null,
+  );
 
   const [toast, setToast] = useState<ToastState | null>(null);
 
@@ -32,6 +44,34 @@ export default function HouseholdsPage() {
       message,
       type,
     });
+  };
+
+  const openEditModal = (household: Household) => {
+    setSelectedHousehold(household);
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setSelectedHousehold(null);
+    setIsEditModalOpen(false);
+  };
+
+  const handleDeleteHousehold = async () => {
+    if (!householdToDelete) {
+      return;
+    }
+
+    try {
+      await deleteHousehold.mutateAsync(householdToDelete.id);
+
+      setHouseholdToDelete(null);
+      showToast("Household deleted successfully.", "success");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unable to delete household.";
+
+      showToast(message, "error");
+    }
   };
 
   if (isLoading) {
@@ -67,7 +107,7 @@ export default function HouseholdsPage() {
             </p>
           </div>
 
-          {canCreateHousehold && (
+          {canCreateEditHousehold && (
             <Button onClick={() => setIsCreateModalOpen(true)}>
               Create Household
             </Button>
@@ -88,6 +128,9 @@ export default function HouseholdsPage() {
             <table className="w-full text-left text-sm">
               <thead className="border-b bg-slate-50">
                 <tr>
+                  {(canCreateEditHousehold || canDeleteHousehold) && (
+                    <th className="px-4 py-3 font-medium">Actions</th>
+                  )}
                   <th className="px-4 py-3 font-medium">Household Code</th>
 
                   <th className="px-4 py-3 font-medium">Address</th>
@@ -103,6 +146,29 @@ export default function HouseholdsPage() {
               <tbody className="divide-y">
                 {households?.map((household) => (
                   <tr key={household.id}>
+                    {canCreateEditHousehold && (
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => openEditModal(household)}
+                          >
+                            Edit
+                          </Button>
+                          {canDeleteHousehold && (
+                            <Button
+                              type="button"
+                              variant="danger"
+                              onClick={() => setHouseholdToDelete(household)}
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    )}
+
                     <td className="px-4 py-3 font-medium">
                       {household.household_code}
                     </td>
@@ -141,6 +207,66 @@ export default function HouseholdsPage() {
             showToast(message, "error");
           }}
         />
+      </Modal>
+
+      <Modal
+        open={isEditModalOpen && !!selectedHousehold}
+        onClose={closeEditModal}
+        title="Edit Household"
+      >
+        {selectedHousehold && (
+          <EditHouseholdForm
+            household={selectedHousehold}
+            onCancel={closeEditModal}
+            onSuccess={() => {
+              closeEditModal();
+              showToast("Household updated successfully.", "success");
+            }}
+            onError={(message) => {
+              showToast(message, "error");
+            }}
+          />
+        )}
+      </Modal>
+
+      {/* delete confirmation modal */}
+      <Modal
+        open={!!householdToDelete}
+        onClose={() => {
+          if (!deleteHousehold.isPending) {
+            setHouseholdToDelete(null);
+          }
+        }}
+        title="Delete Household"
+      >
+        <div className="space-y-6">
+          <p className="text-sm text-slate-600">
+            Are you sure you want to delete household{" "}
+            <strong>{householdToDelete?.household_code}</strong>?
+            <br />
+            This action cannot be undone.
+          </p>
+
+          <div className="flex justify-end gap-3 border-t pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={deleteHousehold.isPending}
+              onClick={() => setHouseholdToDelete(null)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="button"
+              variant="danger"
+              loading={deleteHousehold.isPending}
+              onClick={handleDeleteHousehold}
+            >
+              Delete Household
+            </Button>
+          </div>
+        </div>
       </Modal>
 
       {/* Toast */}

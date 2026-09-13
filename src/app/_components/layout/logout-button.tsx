@@ -1,5 +1,7 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { logout } from "@/app/_lib/auth/logout";
@@ -8,6 +10,7 @@ import { useToast } from "@/app/_providers/toast-provider";
 
 export function LogoutButton() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { showToast } = useToast();
 
@@ -16,6 +19,8 @@ export function LogoutButton() {
       setIsLoggingOut(true);
 
       await logout();
+
+      queryClient.clear();
 
       router.push("/login");
       router.refresh();

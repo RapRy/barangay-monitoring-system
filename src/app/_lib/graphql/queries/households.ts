@@ -7,6 +7,7 @@ export interface Household {
   barangay: string;
   municipality: string;
   created_at: string;
+  province: string;
   updated_at: string;
 }
 export const GET_HOUSEHOLDS = `
@@ -19,6 +20,7 @@ export const GET_HOUSEHOLDS = `
         postal_code
         barangay
         municipality
+        province
         created_at
         updated_at
     }

@@ -58,27 +58,33 @@ export const updateHouseholdSchema = z.object({
     .max(255, "Address must not exceed 255 characters.")
     .optional(),
 
-  //   purok: z
-  //     .string()
-  //     .trim()
-  //     .max(100, "Purok must not exceed 100 characters.")
-  //     .optional(),
+  purok: z
+    .string()
+    .trim()
+    .max(100, "Purok must not exceed 100 characters.")
+    .optional(),
 
-  //   barangay: z
-  //     .string()
-  //     .trim()
-  //     .max(100, "Barangay must not exceed 100 characters.")
-  //     .optional(),
+  barangay: z
+    .string()
+    .trim()
+    .max(100, "Barangay must not exceed 100 characters.")
+    .optional(),
 
-  //   municipality: z
-  //     .string()
-  //     .trim()
-  //     .max(100, "Municipality must not exceed 100 characters.")
-  //     .optional(),
+  municipality: z
+    .string()
+    .trim()
+    .max(100, "Municipality must not exceed 100 characters.")
+    .optional(),
 
-  //   province: z
-  //     .string()
-  //     .trim()
-  //     .max(100, "Province must not exceed 100 characters.")
-  //     .optional(),
+  province: z
+    .string()
+    .trim()
+    .max(100, "Province must not exceed 100 characters.")
+    .optional(),
+
+  postal_code: z
+    .string()
+    .trim()
+    .max(100, "Postal Code must not exceed 100 characters.")
+    .optional(),
 });

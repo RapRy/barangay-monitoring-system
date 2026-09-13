@@ -13,9 +13,9 @@ interface UpdateHouseholdInput {
   address?: string;
   purok?: string;
   barangay?: string;
-  sector?: string;
   municipality?: string;
   province?: string;
+  postal_code?: string;
 }
 
 type UpdateHouseholdVariables = {

@@ -10,5 +10,7 @@ export function useCurrentUser() {
     queryKey: ["current-user"],
     queryFn: () => graphqlRequest<CurrentUserResponse>(GET_CURRENT_USER),
     select: (data) => data.me,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
