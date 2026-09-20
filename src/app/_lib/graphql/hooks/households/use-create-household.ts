@@ -9,6 +9,7 @@ import { queryKeys } from "../../query-keys";
 
 interface CreateHouseholdInput {
   household_code: string;
+  household_name: string;
   address: string;
   postal_code: string;
   purok: string;

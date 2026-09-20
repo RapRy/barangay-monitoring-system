@@ -7,6 +7,12 @@ export const createHouseholdSchema = z.object({
     .min(1, "Household code is required.")
     .max(50, "Household code must not exceed 50 characters."),
 
+  household_name: z
+    .string()
+    .trim()
+    .min(1, "Household name is required.")
+    .max(100, "Household name must not exceed 100 characters."),
+
   address: z
     .string()
     .trim()
@@ -51,6 +57,12 @@ export const updateHouseholdSchema = z.object({
     .min(1, "Household code cannot be empty.")
     .max(50, "Household code must not exceed 50 characters.")
     .optional(),
+
+  household_name: z
+    .string()
+    .trim()
+    .min(1, "Household name is required.")
+    .max(100, "Household name must not exceed 100 characters."),
 
   address: z
     .string()

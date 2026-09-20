@@ -1,6 +1,7 @@
 export interface Household {
   id: string;
   household_code: string;
+  household_name: string;
   address: string | null;
   purok: string;
   postal_code: string;
@@ -15,6 +16,7 @@ export const GET_HOUSEHOLDS = `
     households {
         id
         household_code
+        household_name
         address
         purok
         postal_code

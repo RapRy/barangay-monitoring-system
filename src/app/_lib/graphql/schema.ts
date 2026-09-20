@@ -26,6 +26,7 @@ export const schema = createSchema<GraphQLContext>({
     type Household {
       id: ID!
       household_code: String
+      household_name: String
       address: String
       purok: String
       barangay: String
@@ -38,6 +39,7 @@ export const schema = createSchema<GraphQLContext>({
 
     input HouseholdInput {
       household_code: String
+      household_name: String
       address: String
       purok: String
       barangay: String
@@ -139,6 +141,7 @@ export const schema = createSchema<GraphQLContext>({
         const { data, error } = await context.supabase
           .from("households")
           .insert({
+            household_name: validatedInput.household_name,
             household_code: validatedInput.household_code,
             address: validatedInput.address,
             purok: validatedInput.purok,
@@ -173,6 +176,9 @@ export const schema = createSchema<GraphQLContext>({
           .update({
             ...(validatedInput.household_code !== undefined && {
               household_code: validatedInput.household_code,
+            }),
+            ...(validatedInput.household_name !== undefined && {
+              household_name: validatedInput.household_name,
             }),
             ...(validatedInput.address !== undefined && {
               address: validatedInput.address,

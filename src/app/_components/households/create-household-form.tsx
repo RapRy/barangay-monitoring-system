@@ -17,6 +17,7 @@ interface CreateHouseholdFormProps {
 
 const validationSchema = Yup.object({
   household_code: Yup.string().trim().required("Household code is required."),
+  household_name: Yup.string().trim().required("Household name required"),
 
   address: Yup.string().trim().required("Address is required."),
 
@@ -41,6 +42,7 @@ export default function CreateHouseholdForm({
   const formik = useFormik({
     initialValues: {
       household_code: "",
+      household_name: "",
       address: "",
       purok: "",
       barangay: "",
@@ -81,6 +83,17 @@ export default function CreateHouseholdForm({
                 formik.touched.household_code && formik.errors.household_code,
               )}
               placeholder="HH-001"
+            />
+          </FormField>
+
+          <FormField name="household_name" label="Household Name" required>
+            <Input
+              id="household_name"
+              {...formik.getFieldProps("household_name")}
+              error={Boolean(
+                formik.touched.household_name && formik.errors.household_name,
+              )}
+              placeholder="Family Name"
             />
           </FormField>
 
