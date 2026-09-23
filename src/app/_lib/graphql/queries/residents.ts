@@ -12,7 +12,7 @@ export interface Resident {
 }
 
 export const GET_RESIDENTS = `
-  query GetResidents($householdId: ID!) {
+  query GetResidents($householdId: ID) {
     residents(householdId: $householdId) {
       id
       household_id

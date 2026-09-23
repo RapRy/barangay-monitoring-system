@@ -9,14 +9,15 @@ import {
 } from "../../queries/residents";
 import { queryKeys } from "../../query-keys";
 
-export function useResidents(householdId: string) {
+export function useResidents(householdId?: string) {
+  const resolvedHouseholdId = householdId?.trim() || undefined;
   return useQuery({
-    queryKey: queryKeys.residents(householdId),
+    queryKey: queryKeys.residents(resolvedHouseholdId),
     queryFn: () =>
-      graphqlRequest<GetResidentsResponse>(GET_RESIDENTS, {
-        householdId,
-      }),
+      graphqlRequest<GetResidentsResponse>(
+        GET_RESIDENTS,
+        resolvedHouseholdId ? { householdId: resolvedHouseholdId } : undefined,
+      ),
     select: (data) => data.residents,
-    enabled: Boolean(householdId),
   });
 }

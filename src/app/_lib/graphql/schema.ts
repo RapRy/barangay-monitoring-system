@@ -61,11 +61,21 @@ export const schema = createSchema<GraphQLContext>({
       updated_at: String!
     }
 
+    input ResidentInput {
+      household_id: ID!
+      first_name: String!
+      middle_name: String
+      last_name: String!
+      birth_date: String!
+      sex: String!
+      relationship: String!
+    }
+
     type Query {
       me: User
       households: [Household!]!
       household(id: ID): Household!
-      residents(householdId: ID!): [Resident!]!
+      residents(householdId: ID): [Resident!]!
       testHouseholdCreatePermission: Boolean!
     }
 
@@ -73,6 +83,7 @@ export const schema = createSchema<GraphQLContext>({
       createHousehold(input: HouseholdInput!): Household!
       updateHousehold(id: ID!, input: HouseholdInput!): Household!
       deleteHousehold(id: ID!): Boolean!
+      createResident(input: ResidentInput!): Resident!
     }
   `,
 
@@ -139,11 +150,16 @@ export const schema = createSchema<GraphQLContext>({
       residents: async (_parent, { householdId }, context) => {
         await requirePermission(context, "resident.read");
 
-        const { data, error } = await context.supabase
+        let query = context.supabase
           .from("residents")
           .select("*")
-          .eq("household_id", householdId)
           .order("created_at", { ascending: false });
+
+        if (householdId) {
+          query = query.eq("household_id", householdId);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw handleSupabaseError(error);
 
@@ -251,6 +267,37 @@ export const schema = createSchema<GraphQLContext>({
         if (!data || data.length === 0) throw notFound("Household not found");
 
         return true;
+      },
+
+      createResident: async (_parent, { input }, context) => {
+        await requirePermission(context, "resident.create");
+
+        const firstName = input.first_name?.trim();
+        const lastName = input.last_name?.trim();
+        const sex = input.sex?.trim();
+        const relationship = input.relationship?.trim();
+
+        if (!firstName || !lastName || !sex || !relationship) {
+          throw badUserInput("Resident details are required.");
+        }
+
+        const { data, error } = await context.supabase
+          .from("residents")
+          .insert({
+            household_id: input.household_id,
+            first_name: firstName,
+            middle_name: input.middle_name?.trim() || null,
+            last_name: lastName,
+            birth_date: input.birth_date,
+            sex,
+            relationship,
+          })
+          .select()
+          .single();
+
+        if (error) throw handleSupabaseError(error);
+
+        return data;
       },
     },
   },
