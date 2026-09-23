@@ -48,10 +48,24 @@ export const schema = createSchema<GraphQLContext>({
       province: String
     }
 
+    type Resident {
+      id: ID!
+      household_id: ID!
+      first_name: String!
+      middle_name: String
+      last_name: String!
+      birth_date: String!
+      sex: String!
+      relationship: String!
+      created_at: String!
+      updated_at: String!
+    }
+
     type Query {
       me: User
       households: [Household!]!
       household(id: ID): Household!
+      residents(householdId: ID!): [Resident!]!
       testHouseholdCreatePermission: Boolean!
     }
 
@@ -119,6 +133,19 @@ export const schema = createSchema<GraphQLContext>({
         if (error) {
           throw handleSupabaseError(error);
         }
+
+        return data;
+      },
+      residents: async (_parent, { householdId }, context) => {
+        await requirePermission(context, "resident.read");
+
+        const { data, error } = await context.supabase
+          .from("residents")
+          .select("*")
+          .eq("household_id", householdId)
+          .order("created_at", { ascending: false });
+
+        if (error) throw handleSupabaseError(error);
 
         return data;
       },
