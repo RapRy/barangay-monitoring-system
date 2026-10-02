@@ -51,6 +51,7 @@ export const schema = createSchema<GraphQLContext>({
     type Resident {
       id: ID!
       household_id: ID!
+      household_name: String
       first_name: String!
       middle_name: String
       last_name: String!
@@ -84,6 +85,8 @@ export const schema = createSchema<GraphQLContext>({
       updateHousehold(id: ID!, input: HouseholdInput!): Household!
       deleteHousehold(id: ID!): Boolean!
       createResident(input: ResidentInput!): Resident!
+      updateResident(id: ID!, input: ResidentInput!): Resident!
+      deleteResident(id: ID!): Boolean!
     }
   `,
 
@@ -152,7 +155,9 @@ export const schema = createSchema<GraphQLContext>({
 
         let query = context.supabase
           .from("residents")
-          .select("*")
+          .select(
+            `*,household:households!residents_household_id_fkey (household_name)`,
+          )
           .order("created_at", { ascending: false });
 
         if (householdId) {
@@ -163,7 +168,18 @@ export const schema = createSchema<GraphQLContext>({
 
         if (error) throw handleSupabaseError(error);
 
-        return data;
+        return (data ?? []).map(
+          ({
+            household,
+            ...resident
+          }: {
+            household: { household_name: string | null } | null;
+            [key: string]: unknown;
+          }) => ({
+            ...resident,
+            household_name: household?.household_name ?? null,
+          }),
+        );
       },
     },
 
@@ -298,6 +314,55 @@ export const schema = createSchema<GraphQLContext>({
         if (error) throw handleSupabaseError(error);
 
         return data;
+      },
+      updateResident: async (_parent, { id, input }, context) => {
+        await requirePermission(context, "resident.update");
+
+        const firstName = input.first_name?.trim();
+        const lastName = input.last_name?.trim();
+        const sex = input.sex?.trim();
+        const relationship = input.relationship?.trim();
+
+        if (!firstName || !lastName || !sex || !relationship) {
+          throw badUserInput("Resident details are required.");
+        }
+
+        const { data, error } = await context.supabase
+          .from("residents")
+          .update({
+            household_id: input.household_id,
+            first_name: firstName,
+            middle_name: input.middle_name?.trim() || null,
+            last_name: lastName,
+            birth_date: input.birth_date,
+            sex,
+            relationship,
+          })
+          .eq("id", id)
+          .select()
+          .maybeSingle();
+
+        if (error) throw handleSupabaseError(error);
+        if (!data) throw notFound("Resident not found");
+
+        return data;
+      },
+
+      deleteResident: async (_parent, { id }, context) => {
+        await requirePermission(context, "resident.delete");
+
+        const { data, error } = await context.supabase
+          .from("residents")
+          .delete()
+          .eq("id", id)
+          .select("id");
+
+        if (error) throw handleSupabaseError(error);
+        if (!data || data.length === 0) {
+          throw notFound("Resident not found");
+        }
+
+        return true;
       },
     },
   },
