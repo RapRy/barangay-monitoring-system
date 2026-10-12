@@ -29,6 +29,28 @@ export const GET_HOUSEHOLDS = `
   }
 `;
 
+export const GET_HOUSEHOLD_BY_CODE = `
+  query GetHouseholdByCode($householdCode: String!) {
+    householdByCode(householdCode: $householdCode) {
+      id
+      household_code
+      household_name
+      address
+      purok
+      postal_code
+      barangay
+      municipality
+      province
+      created_at
+      updated_at
+    }
+  }
+`;
+
 export interface GetHouseholdsResponse {
   households: Household[];
+}
+
+export interface GetHouseholdByCodeResponse {
+  householdByCode: Household | null;
 }

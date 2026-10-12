@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState } from "react";
+import Link from "next/link";
 
 import CreateResidentForm from "@/app/_components/residents/create-resident-form";
 import { Button } from "@/app/_components/ui/button";
@@ -134,8 +135,14 @@ export default function ResidentsPage() {
               <tbody className="divide-y">
                 {residents.map((resident) => (
                   <tr key={resident.id}>
-                    {canCreateEditResident && (
-                      <td className="px-4 py-3">
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/residents/${resident.id}`}
+                        className="inline-flex h-11 items-center justify-center rounded-lg border border-[var(--border)] bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                      >
+                        View
+                      </Link>
+                      {canCreateEditResident && (
                         <div className="flex gap-2">
                           <Button
                             type="button"
@@ -154,8 +161,8 @@ export default function ResidentsPage() {
                             </Button>
                           )}
                         </div>
-                      </td>
-                    )}
+                      )}
+                    </td>
                     <td className="px-4 py-3 font-medium">
                       {resident.first_name} {resident.middle_name ?? ""}{" "}
                       {resident.last_name}

@@ -29,7 +29,7 @@ export function useCreateResident() {
       graphqlRequest<CreateResidentResponse>(CREATE_RESIDENT, { input }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.residents(),
+        queryKey: queryKeys.residentsRoot,
       });
     },
   });

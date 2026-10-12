@@ -9,8 +9,10 @@ import { useCreateResident } from "@/app/_lib/graphql/hooks/residents/use-create
 import { Button } from "@/app/_components/ui/button";
 import { FormField } from "@/app/_components/ui/form-field";
 import { Input } from "@/app/_components/ui/input";
+import { useEffect } from "react";
 
 interface CreateResidentFormProps {
+  defaultHouseholdId?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
   onError?: (message: string) => void;
@@ -27,6 +29,7 @@ const validationSchema = Yup.object({
 });
 
 export default function CreateResidentForm({
+  defaultHouseholdId,
   onSuccess,
   onCancel,
   onError,
@@ -37,7 +40,7 @@ export default function CreateResidentForm({
 
   const formik = useFormik({
     initialValues: {
-      household_id: "",
+      household_id: defaultHouseholdId ?? "",
       first_name: "",
       middle_name: "",
       last_name: "",
@@ -68,6 +71,15 @@ export default function CreateResidentForm({
       }
     },
   });
+
+  useEffect(() => {
+    if (
+      defaultHouseholdId &&
+      defaultHouseholdId !== formik.values.household_id
+    ) {
+      formik.setFieldValue("household_id", defaultHouseholdId);
+    }
+  }, [defaultHouseholdId, formik]);
 
   return (
     <FormikProvider value={formik}>

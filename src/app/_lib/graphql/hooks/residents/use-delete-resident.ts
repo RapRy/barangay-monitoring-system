@@ -18,7 +18,7 @@ export function useDeleteResident() {
       graphqlRequest<DeleteResidentResponse>(DELETE_RESIDENT, { id }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.residents(),
+        queryKey: queryKeys.residentsRoot,
       });
     },
   });

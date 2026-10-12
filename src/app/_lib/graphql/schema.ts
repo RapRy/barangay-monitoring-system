@@ -52,6 +52,7 @@ export const schema = createSchema<GraphQLContext>({
       id: ID!
       household_id: ID!
       household_name: String
+      household_code: String
       first_name: String!
       middle_name: String
       last_name: String!
@@ -76,7 +77,9 @@ export const schema = createSchema<GraphQLContext>({
       me: User
       households: [Household!]!
       household(id: ID): Household!
+      householdByCode(householdCode: String!): Household
       residents(householdId: ID): [Resident!]!
+      resident(id: ID!): Resident!
       testHouseholdCreatePermission: Boolean!
     }
 
@@ -150,6 +153,19 @@ export const schema = createSchema<GraphQLContext>({
 
         return data;
       },
+      householdByCode: async (_parent, { householdCode }, context) => {
+        await requirePermission(context, "household.read");
+
+        const { data, error } = await context.supabase
+          .from("households")
+          .select("*")
+          .eq("household_code", householdCode)
+          .maybeSingle();
+
+        if (error) throw handleSupabaseError(error);
+
+        return data;
+      },
       residents: async (_parent, { householdId }, context) => {
         await requirePermission(context, "resident.read");
 
@@ -180,6 +196,39 @@ export const schema = createSchema<GraphQLContext>({
             household_name: household?.household_name ?? null,
           }),
         );
+      },
+      resident: async (_parent, { id }, context) => {
+        await requirePermission(context, "resident.read");
+
+        const { data, error } = await context.supabase
+          .from("residents")
+          .select(
+            `
+      *,
+      household:households!residents_household_id_fkey (
+        household_name,
+        household_code
+      )
+    `,
+          )
+          .eq("id", id)
+          .maybeSingle();
+
+        if (error) throw handleSupabaseError(error);
+        if (!data) throw notFound("Resident not found");
+
+        const { household, ...residentData } = data as typeof data & {
+          household: {
+            household_name: string | null;
+            household_code: string | null;
+          } | null;
+        };
+
+        return {
+          ...residentData,
+          household_name: household?.household_name ?? null,
+          household_code: household?.household_code ?? null,
+        };
       },
     },
 

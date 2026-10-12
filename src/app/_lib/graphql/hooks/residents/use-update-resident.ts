@@ -28,7 +28,7 @@ export function useUpdateResident() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.residents(),
+        queryKey: queryKeys.residentsRoot,
       });
     },
   });

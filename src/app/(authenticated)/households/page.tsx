@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 import { useHouseholds } from "@/app/_lib/graphql/hooks/households/use-households";
 import { useDeleteHousehold } from "@/app/_lib/graphql/hooks/households/use-delete-household";
@@ -146,9 +147,15 @@ export default function HouseholdsPage() {
               <tbody className="divide-y">
                 {households?.map((household) => (
                   <tr key={household.id}>
-                    {canCreateEditHousehold && (
-                      <td className="px-4 py-3">
-                        <div className="flex gap-2">
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          href={`/households/${encodeURIComponent(household.household_code.toLowerCase())}`}
+                          className="inline-flex h-11 items-center justify-center rounded-lg border border-[var(--border)] bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                        >
+                          View Residents
+                        </Link>
+                        {canCreateEditHousehold && (
                           <Button
                             type="button"
                             variant="outline"
@@ -156,18 +163,18 @@ export default function HouseholdsPage() {
                           >
                             Edit
                           </Button>
-                          {canDeleteHousehold && (
-                            <Button
-                              type="button"
-                              variant="danger"
-                              onClick={() => setHouseholdToDelete(household)}
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    )}
+                        )}
+                        {canDeleteHousehold && (
+                          <Button
+                            type="button"
+                            variant="danger"
+                            onClick={() => setHouseholdToDelete(household)}
+                          >
+                            Delete
+                          </Button>
+                        )}
+                      </div>
+                    </td>
 
                     <td className="px-4 py-3 font-medium">
                       {household.household_code}

@@ -9,7 +9,10 @@ import {
 } from "../../queries/residents";
 import { queryKeys } from "../../query-keys";
 
-export function useResidents(householdId?: string) {
+export function useResidents(
+  householdId?: string,
+  options: { enabled?: boolean } = {},
+) {
   const resolvedHouseholdId = householdId?.trim() || undefined;
   return useQuery({
     queryKey: queryKeys.residents(resolvedHouseholdId),
@@ -19,5 +22,6 @@ export function useResidents(householdId?: string) {
         resolvedHouseholdId ? { householdId: resolvedHouseholdId } : undefined,
       ),
     select: (data) => data.residents,
+    enabled: options.enabled ?? true,
   });
 }
