@@ -129,9 +129,7 @@ export default function HouseholdsPage() {
             <table className="w-full text-left text-sm">
               <thead className="border-b bg-slate-50">
                 <tr>
-                  {(canCreateEditHousehold || canDeleteHousehold) && (
-                    <th className="px-4 py-3 font-medium">Actions</th>
-                  )}
+                  <th className="px-4 py-3 font-medium">Actions</th>
                   <th className="px-4 py-3 font-medium">Household Code</th>
 
                   <th className="px-4 py-3 font-medium">Address</th>

@@ -121,9 +121,7 @@ export default function ResidentsPage() {
             <table className="w-full text-left text-sm">
               <thead className="border-b bg-slate-50">
                 <tr>
-                  {(canCreateEditResident || canDeleteResident) && (
-                    <th className="px-4 py-3 font-medium">Actions</th>
-                  )}
+                  <th className="px-4 py-3 font-medium">Actions</th>
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Household</th>
                   <th className="px-4 py-3 font-medium">Sex</th>
@@ -163,6 +161,7 @@ export default function ResidentsPage() {
                         </div>
                       )}
                     </td>
+
                     <td className="px-4 py-3 font-medium">
                       {resident.first_name} {resident.middle_name ?? ""}{" "}
                       {resident.last_name}

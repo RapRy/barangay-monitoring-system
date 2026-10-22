@@ -4,6 +4,15 @@ import {
   createHouseholdSchema,
   updateHouseholdSchema,
 } from "../validation/household";
+import {
+  createResidentSchema,
+  updateResidentSchema,
+} from "../validation/resident";
+import {
+  createSurveySchema,
+  updateSurveySchema,
+  surveyResidentResponsesSchema,
+} from "../validation/survey";
 
 import type { GraphQLContext } from "./context";
 import { badUserInput, notFound } from "./errors";
@@ -73,6 +82,70 @@ export const schema = createSchema<GraphQLContext>({
       relationship: String!
     }
 
+    type Survey {
+      id: ID!
+      household_id: ID!
+      survey_date: String!
+      surveyed_by: ID
+      number_of_family_members: Int!
+      source_of_income: String
+      monthly_income: Float
+      water_source: String
+      has_electricity: Boolean
+      has_internet: Boolean
+      housing_condition: String
+      assistance_needed: String
+      notes: String
+      created_at: String!
+      updated_at: String!
+    }
+
+    type SurveyResidentResponse {
+      id: ID!
+      survey_id: ID!
+      resident_id: ID
+      resident_name: String!
+      employment_status: String
+      educational_status: String
+      health_concerns: String
+      created_at: String!
+      updated_at: String!
+    }
+
+    input CreateSurveyInput {
+      household_id: ID!
+      survey_date: String
+      number_of_family_members: Int!
+      source_of_income: String
+      monthly_income: Float
+      water_source: String
+      has_electricity: Boolean
+      has_internet: Boolean
+      housing_condition: String
+      assistance_needed: String
+      notes: String
+    }
+
+    input UpdateSurveyInput {
+      survey_date: String
+      number_of_family_members: Int
+      source_of_income: String
+      monthly_income: Float
+      water_source: String
+      has_electricity: Boolean
+      has_internet: Boolean
+      housing_condition: String
+      assistance_needed: String
+      notes: String
+    }
+
+    input SurveyResidentResponseInput {
+      resident_id: ID!
+      employment_status: String
+      educational_status: String
+      health_concerns: String
+    }
+
     type Query {
       me: User
       households: [Household!]!
@@ -80,6 +153,9 @@ export const schema = createSchema<GraphQLContext>({
       householdByCode(householdCode: String!): Household
       residents(householdId: ID): [Resident!]!
       resident(id: ID!): Resident!
+      surveys(householdId: ID): [Survey!]!
+      survey(id: ID!): Survey!
+      surveyResidentResponses(surveyId: ID!): [SurveyResidentResponse!]!
       testHouseholdCreatePermission: Boolean!
     }
 
@@ -90,6 +166,13 @@ export const schema = createSchema<GraphQLContext>({
       createResident(input: ResidentInput!): Resident!
       updateResident(id: ID!, input: ResidentInput!): Resident!
       deleteResident(id: ID!): Boolean!
+      createSurvey(input: CreateSurveyInput!): Survey!
+      updateSurvey(id: ID!, input: UpdateSurveyInput!): Survey!
+      deleteSurvey(id: ID!): Boolean!
+      saveSurveyResidentResponses(
+        surveyId: ID!
+        inputs: [SurveyResidentResponseInput!]!
+      ): [SurveyResidentResponse!]!
     }
   `,
 
@@ -230,6 +313,54 @@ export const schema = createSchema<GraphQLContext>({
           household_code: household?.household_code ?? null,
         };
       },
+      surveys: async (_parent, { householdId }, context) => {
+        await requirePermission(context, "survey.read");
+
+        let query = context.supabase
+          .from("surveys")
+          .select("*")
+          .order("survey_date", { ascending: false })
+          .order("created_at", { ascending: false });
+
+        if (householdId) {
+          query = query.eq("household_id", householdId);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw handleSupabaseError(error);
+
+        return data ?? [];
+      },
+
+      survey: async (_parent, { id }, context) => {
+        await requirePermission(context, "survey.read");
+
+        const { data, error } = await context.supabase
+          .from("surveys")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (error) throw handleSupabaseError(error);
+        if (!data) throw notFound("Survey not found");
+
+        return data;
+      },
+
+      surveyResidentResponses: async (_parent, { surveyId }, context) => {
+        await requirePermission(context, "survey.resident_response.read");
+
+        const { data, error } = await context.supabase
+          .from("survey_resident_responses")
+          .select("*")
+          .eq("survey_id", surveyId)
+          .order("created_at", { ascending: true });
+
+        if (error) throw handleSupabaseError(error);
+
+        return data ?? [];
+      },
     },
 
     Mutation: {
@@ -337,25 +468,26 @@ export const schema = createSchema<GraphQLContext>({
       createResident: async (_parent, { input }, context) => {
         await requirePermission(context, "resident.create");
 
-        const firstName = input.first_name?.trim();
-        const lastName = input.last_name?.trim();
-        const sex = input.sex?.trim();
-        const relationship = input.relationship?.trim();
+        const result = createResidentSchema.safeParse(input);
 
-        if (!firstName || !lastName || !sex || !relationship) {
-          throw badUserInput("Resident details are required.");
+        if (!result.success) {
+          throw badUserInput(
+            result.error.issues[0]?.message ?? "Invalid resident data.",
+          );
         }
+
+        const validatedInput = result.data;
 
         const { data, error } = await context.supabase
           .from("residents")
           .insert({
-            household_id: input.household_id,
-            first_name: firstName,
-            middle_name: input.middle_name?.trim() || null,
-            last_name: lastName,
-            birth_date: input.birth_date,
-            sex,
-            relationship,
+            household_id: validatedInput.household_id,
+            first_name: validatedInput.first_name,
+            middle_name: validatedInput.middle_name || null,
+            last_name: validatedInput.last_name,
+            birth_date: validatedInput.birth_date,
+            sex: validatedInput.sex,
+            relationship: validatedInput.relationship,
           })
           .select()
           .single();
@@ -367,25 +499,26 @@ export const schema = createSchema<GraphQLContext>({
       updateResident: async (_parent, { id, input }, context) => {
         await requirePermission(context, "resident.update");
 
-        const firstName = input.first_name?.trim();
-        const lastName = input.last_name?.trim();
-        const sex = input.sex?.trim();
-        const relationship = input.relationship?.trim();
+        const result = updateResidentSchema.safeParse(input);
 
-        if (!firstName || !lastName || !sex || !relationship) {
-          throw badUserInput("Resident details are required.");
+        if (!result.success) {
+          throw badUserInput(
+            result.error.issues[0]?.message ?? "Invalid resident data.",
+          );
         }
+
+        const validatedInput = result.data;
 
         const { data, error } = await context.supabase
           .from("residents")
           .update({
-            household_id: input.household_id,
-            first_name: firstName,
-            middle_name: input.middle_name?.trim() || null,
-            last_name: lastName,
-            birth_date: input.birth_date,
-            sex,
-            relationship,
+            household_id: validatedInput.household_id,
+            first_name: validatedInput.first_name,
+            middle_name: validatedInput.middle_name || null,
+            last_name: validatedInput.last_name,
+            birth_date: validatedInput.birth_date,
+            sex: validatedInput.sex,
+            relationship: validatedInput.relationship,
           })
           .eq("id", id)
           .select()
@@ -412,6 +545,155 @@ export const schema = createSchema<GraphQLContext>({
         }
 
         return true;
+      },
+
+      createSurvey: async (_parent, { input }, context) => {
+        await requirePermission(context, "survey.create");
+
+        const result = createSurveySchema.safeParse(input);
+
+        if (!result.success) {
+          throw badUserInput(
+            result.error.issues[0]?.message ?? "Invalid survey data.",
+          );
+        }
+
+        const { data, error } = await context.supabase
+          .from("surveys")
+          .insert(result.data)
+          .select()
+          .single();
+
+        if (error) throw handleSupabaseError(error);
+
+        return data;
+      },
+      updateSurvey: async (_parent, { id, input }, context) => {
+        await requirePermission(context, "survey.update");
+
+        const result = updateSurveySchema.safeParse(input);
+
+        if (!result.success) {
+          throw badUserInput(
+            result.error.issues[0]?.message ?? "Invalid survey data.",
+          );
+        }
+
+        const { data, error } = await context.supabase
+          .from("surveys")
+          .update({
+            ...result.data,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id)
+          .select()
+          .maybeSingle();
+
+        if (error) throw handleSupabaseError(error);
+        if (!data) throw notFound("Survey not found");
+
+        return data;
+      },
+      deleteSurvey: async (_parent, { id }, context) => {
+        await requirePermission(context, "survey.delete");
+
+        const { data, error } = await context.supabase
+          .from("surveys")
+          .delete()
+          .eq("id", id)
+          .select("id");
+
+        if (error) throw handleSupabaseError(error);
+        if (!data || data.length === 0) {
+          throw notFound("Survey not found");
+        }
+
+        return true;
+      },
+      saveSurveyResidentResponses: async (
+        _parent,
+        { surveyId, inputs },
+        context,
+      ) => {
+        await requirePermission(context, "survey.update");
+        await requirePermission(context, "survey.resident_response.read");
+
+        const result = surveyResidentResponsesSchema.safeParse(inputs);
+
+        if (!result.success) {
+          throw badUserInput(
+            result.error.issues[0]?.message ??
+              "Invalid resident survey responses.",
+          );
+        }
+
+        const { data: survey, error: surveyError } = await context.supabase
+          .from("surveys")
+          .select("id, household_id")
+          .eq("id", surveyId)
+          .maybeSingle();
+
+        if (surveyError) throw handleSupabaseError(surveyError);
+        if (!survey) throw notFound("Survey not found");
+
+        if (result.data.length === 0) return [];
+
+        const residentIds = result.data.map((response) => response.resident_id);
+
+        const { data: residents, error: residentsError } =
+          await context.supabase
+            .from("residents")
+            .select("id, first_name, middle_name, last_name")
+            .eq("household_id", survey.household_id)
+            .in("id", residentIds);
+
+        if (residentsError) throw handleSupabaseError(residentsError);
+
+        const residentsById = new Map(
+          (
+            (residents ?? []) as {
+              id: string;
+              first_name: string;
+              middle_name: string | null;
+              last_name: string;
+            }[]
+          ).map((resident) => [resident.id, resident] as const),
+        );
+
+        if (residentsById.size !== residentIds.length) {
+          throw badUserInput(
+            "Every resident response must belong to the survey's household.",
+          );
+        }
+
+        const rows = result.data.map((response) => {
+          const resident = residentsById.get(response.resident_id)!;
+
+          return {
+            survey_id: survey.id,
+            resident_id: resident.id,
+            resident_name: [
+              resident.first_name,
+              resident.middle_name,
+              resident.last_name,
+            ]
+              .filter(Boolean)
+              .join(" "),
+            employment_status: response.employment_status ?? null,
+            educational_status: response.educational_status ?? null,
+            health_concerns: response.health_concerns ?? null,
+            updated_at: new Date().toISOString(),
+          };
+        });
+
+        const { data, error } = await context.supabase
+          .from("survey_resident_responses")
+          .upsert(rows, { onConflict: "survey_id,resident_id" })
+          .select();
+
+        if (error) throw handleSupabaseError(error);
+
+        return data ?? [];
       },
     },
   },
