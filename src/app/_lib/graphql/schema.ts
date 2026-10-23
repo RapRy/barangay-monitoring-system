@@ -8,6 +8,7 @@ import {
   createResidentSchema,
   updateResidentSchema,
 } from "../validation/resident";
+import { createCaseSchema, updateCaseSchema } from "../validation/case";
 import {
   createSurveySchema,
   updateSurveySchema,
@@ -146,6 +147,50 @@ export const schema = createSchema<GraphQLContext>({
       health_concerns: String
     }
 
+    type Case {
+      id: ID!
+      household_id: ID!
+      resident_id: ID
+      resident_name: String!
+      case_type: String!
+      title: String!
+      description: String
+      status: String!
+      priority: String!
+      assigned_to: ID
+      reported_at: String!
+      follow_up_date: String
+      resolution_notes: String
+      created_by: ID
+      created_at: String!
+      updated_at: String!
+    }
+
+    input CreateCaseInput {
+      household_id: ID!
+      resident_id: ID!
+      case_type: String!
+      title: String!
+      description: String
+      priority: String
+      assigned_to: ID
+      reported_at: String
+      follow_up_date: String
+      resolution_notes: String
+    }
+
+    input UpdateCaseInput {
+      case_type: String
+      title: String
+      description: String
+      status: String
+      priority: String
+      assigned_to: ID
+      reported_at: String
+      follow_up_date: String
+      resolution_notes: String
+    }
+
     type Query {
       me: User
       households: [Household!]!
@@ -156,6 +201,8 @@ export const schema = createSchema<GraphQLContext>({
       surveys(householdId: ID): [Survey!]!
       survey(id: ID!): Survey!
       surveyResidentResponses(surveyId: ID!): [SurveyResidentResponse!]!
+      cases(householdId: ID, residentId: ID): [Case!]!
+      case(id: ID!): Case!
       testHouseholdCreatePermission: Boolean!
     }
 
@@ -173,6 +220,9 @@ export const schema = createSchema<GraphQLContext>({
         surveyId: ID!
         inputs: [SurveyResidentResponseInput!]!
       ): [SurveyResidentResponse!]!
+      createCase(input: CreateCaseInput!): Case!
+      updateCase(id: ID!, input: UpdateCaseInput!): Case!
+      deleteCase(id: ID!): Boolean!
     }
   `,
 
@@ -360,6 +410,40 @@ export const schema = createSchema<GraphQLContext>({
         if (error) throw handleSupabaseError(error);
 
         return data ?? [];
+      },
+
+      cases: async (_parent, { householdId, residentId }, context) => {
+        await requirePermission(context, "case.read");
+
+        let query = context.supabase
+          .from("cases")
+          .select("*")
+          .order("reported_at", { ascending: false })
+          .order("created_at", { ascending: false });
+
+        if (householdId) query = query.eq("household_id", householdId);
+        if (residentId) query = query.eq("resident_id", residentId);
+
+        const { data, error } = await query;
+
+        if (error) throw handleSupabaseError(error);
+
+        return data ?? [];
+      },
+
+      case: async (_parent, { id }, context) => {
+        await requirePermission(context, "case.read");
+
+        const { data, error } = await context.supabase
+          .from("cases")
+          .select("*")
+          .eq("id", id)
+          .maybeSingle();
+
+        if (error) throw handleSupabaseError(error);
+        if (!data) throw notFound("Case not found");
+
+        return data;
       },
     },
 
@@ -694,6 +778,99 @@ export const schema = createSchema<GraphQLContext>({
         if (error) throw handleSupabaseError(error);
 
         return data ?? [];
+      },
+      createCase: async (_parent, { input }, context) => {
+        await requirePermission(context, "case.create");
+
+        const result = createCaseSchema.safeParse(input);
+
+        if (!result.success) {
+          throw badUserInput(
+            result.error.issues[0]?.message ?? "Invalid case data.",
+          );
+        }
+
+        const validatedInput = result.data;
+
+        // Validate the resident/household pair on the server and construct
+        // the name snapshot; never accept resident_name from the client.
+        const { data: resident, error: residentError } = await context.supabase
+          .from("residents")
+          .select("id, household_id, first_name, middle_name, last_name")
+          .eq("id", validatedInput.resident_id)
+          .maybeSingle();
+
+        if (residentError) throw handleSupabaseError(residentError);
+        if (!resident) throw notFound("Resident not found");
+
+        if (resident.household_id !== validatedInput.household_id) {
+          throw badUserInput(
+            "The selected resident does not belong to the selected household.",
+          );
+        }
+
+        const residentName = [
+          resident.first_name,
+          resident.middle_name,
+          resident.last_name,
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        const { data, error } = await context.supabase
+          .from("cases")
+          .insert({
+            ...validatedInput,
+            resident_name: residentName,
+          })
+          .select()
+          .single();
+
+        if (error) throw handleSupabaseError(error);
+
+        return data;
+      },
+
+      updateCase: async (_parent, { id, input }, context) => {
+        await requirePermission(context, "case.update");
+
+        const result = updateCaseSchema.safeParse(input);
+
+        if (!result.success) {
+          throw badUserInput(
+            result.error.issues[0]?.message ?? "Invalid case data.",
+          );
+        }
+
+        const { data, error } = await context.supabase
+          .from("cases")
+          .update({
+            ...result.data,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id)
+          .select()
+          .maybeSingle();
+
+        if (error) throw handleSupabaseError(error);
+        if (!data) throw notFound("Case not found");
+
+        return data;
+      },
+
+      deleteCase: async (_parent, { id }, context) => {
+        await requirePermission(context, "case.delete");
+
+        const { data, error } = await context.supabase
+          .from("cases")
+          .delete()
+          .eq("id", id)
+          .select("id");
+
+        if (error) throw handleSupabaseError(error);
+        if (!data || data.length === 0) throw notFound("Case not found");
+
+        return true;
       },
     },
   },

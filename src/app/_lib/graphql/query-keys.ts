@@ -11,4 +11,8 @@ export const queryKeys = {
   surveyResponsesRoot: ["survey-resident-responses"] as const,
   surveyResponses: (surveyId: string) =>
     ["survey-resident-responses", surveyId] as const,
+  casesRoot: ["cases"] as const,
+  cases: (filters: { householdId?: string; residentId?: string } = {}) =>
+    ["cases", filters] as const,
+  case: (id: string) => ["cases", "detail", id] as const,
 };
