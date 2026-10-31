@@ -8,7 +8,7 @@ import { cn } from "@/app/_lib/utils/cn";
 
 const navigation = [
   {
-    label: "Overview",
+    label: "Dashboard",
     href: "/",
   },
   {
@@ -26,6 +26,14 @@ const navigation = [
   {
     label: "Cases",
     href: "/cases",
+  },
+  {
+    label: "Assistance",
+    href: "/assistance",
+  },
+  {
+    label: "Reports",
+    href: "/reports",
   },
 ];
 
