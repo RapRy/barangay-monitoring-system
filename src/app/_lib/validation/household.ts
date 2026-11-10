@@ -1,102 +1,142 @@
 import { z } from "zod";
 
-export const createHouseholdSchema = z.object({
-  household_code: z
-    .string()
-    .trim()
-    .min(1, "Household code is required.")
-    .max(50, "Household code must not exceed 50 characters."),
+export const createHouseholdSchema = z
+  .object({
+    household_code: z
+      .string()
+      .trim()
+      .min(1, "Household code is required.")
+      .max(50, "Household code must not exceed 50 characters."),
 
-  household_name: z
-    .string()
-    .trim()
-    .min(1, "Household name is required.")
-    .max(100, "Household name must not exceed 100 characters."),
+    household_name: z
+      .string()
+      .trim()
+      .min(1, "Household name is required.")
+      .max(100, "Household name must not exceed 100 characters."),
 
-  address: z
-    .string()
-    .trim()
-    .max(255, "Address must not exceed 255 characters.")
-    .optional(),
+    latitude: z.number().min(-90).max(90).nullable().optional(),
+    longitude: z.number().min(-180).max(180).nullable().optional(),
 
-  purok: z
-    .string()
-    .trim()
-    .max(100, "Purok must not exceed 100 characters.")
-    .optional(),
+    address: z
+      .string()
+      .trim()
+      .max(255, "Address must not exceed 255 characters.")
+      .optional(),
 
-  barangay: z
-    .string()
-    .trim()
-    .max(100, "Barangay must not exceed 100 characters.")
-    .optional(),
+    purok: z
+      .string()
+      .trim()
+      .max(100, "Purok must not exceed 100 characters.")
+      .optional(),
 
-  municipality: z
-    .string()
-    .trim()
-    .max(100, "Municipality must not exceed 100 characters.")
-    .optional(),
+    barangay: z
+      .string()
+      .trim()
+      .max(100, "Barangay must not exceed 100 characters.")
+      .optional(),
 
-  province: z
-    .string()
-    .trim()
-    .max(100, "Province must not exceed 100 characters.")
-    .optional(),
+    municipality: z
+      .string()
+      .trim()
+      .max(100, "Municipality must not exceed 100 characters.")
+      .optional(),
 
-  postal_code: z
-    .string()
-    .trim()
-    .max(100, "Postal Code must not exceed 100 characters.")
-    .optional(),
-});
+    province: z
+      .string()
+      .trim()
+      .max(100, "Province must not exceed 100 characters.")
+      .optional(),
 
-export const updateHouseholdSchema = z.object({
-  household_code: z
-    .string()
-    .trim()
-    .min(1, "Household code cannot be empty.")
-    .max(50, "Household code must not exceed 50 characters.")
-    .optional(),
+    postal_code: z
+      .string()
+      .trim()
+      .max(100, "Postal Code must not exceed 100 characters.")
+      .optional(),
+  })
+  .superRefine((values, ctx) => {
+    if ((values.latitude == null) !== (values.longitude == null)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["longitude"],
+        message: "Enter both latitude and longitude, or leave both blank.",
+      });
+    }
+  });
 
-  household_name: z
-    .string()
-    .trim()
-    .min(1, "Household name is required.")
-    .max(100, "Household name must not exceed 100 characters."),
+export const updateHouseholdSchema = z
+  .object({
+    household_code: z
+      .string()
+      .trim()
+      .min(1, "Household code cannot be empty.")
+      .max(50, "Household code must not exceed 50 characters.")
+      .optional(),
 
-  address: z
-    .string()
-    .trim()
-    .max(255, "Address must not exceed 255 characters.")
-    .optional(),
+    household_name: z
+      .string()
+      .trim()
+      .min(1, "Household name is required.")
+      .max(100, "Household name must not exceed 100 characters."),
+    latitude: z.number().min(-90).max(90).nullable().optional(),
+    longitude: z.number().min(-180).max(180).nullable().optional(),
 
-  purok: z
-    .string()
-    .trim()
-    .max(100, "Purok must not exceed 100 characters.")
-    .optional(),
+    address: z
+      .string()
+      .trim()
+      .max(255, "Address must not exceed 255 characters.")
+      .optional(),
 
-  barangay: z
-    .string()
-    .trim()
-    .max(100, "Barangay must not exceed 100 characters.")
-    .optional(),
+    purok: z
+      .string()
+      .trim()
+      .max(100, "Purok must not exceed 100 characters.")
+      .optional(),
 
-  municipality: z
-    .string()
-    .trim()
-    .max(100, "Municipality must not exceed 100 characters.")
-    .optional(),
+    barangay: z
+      .string()
+      .trim()
+      .max(100, "Barangay must not exceed 100 characters.")
+      .optional(),
 
-  province: z
-    .string()
-    .trim()
-    .max(100, "Province must not exceed 100 characters.")
-    .optional(),
+    municipality: z
+      .string()
+      .trim()
+      .max(100, "Municipality must not exceed 100 characters.")
+      .optional(),
 
-  postal_code: z
-    .string()
-    .trim()
-    .max(100, "Postal Code must not exceed 100 characters.")
-    .optional(),
-});
+    province: z
+      .string()
+      .trim()
+      .max(100, "Province must not exceed 100 characters.")
+      .optional(),
+
+    postal_code: z
+      .string()
+      .trim()
+      .max(100, "Postal Code must not exceed 100 characters.")
+      .optional(),
+  })
+  .superRefine((values, ctx) => {
+    const latitudeProvided = values.latitude !== undefined;
+    const longitudeProvided = values.longitude !== undefined;
+
+    if (latitudeProvided !== longitudeProvided) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["longitude"],
+        message: "Update both latitude and longitude together.",
+      });
+      return;
+    }
+
+    if (
+      latitudeProvided &&
+      (values.latitude == null) !== (values.longitude == null)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["longitude"],
+        message: "Enter both latitude and longitude, or clear both.",
+      });
+    }
+  });

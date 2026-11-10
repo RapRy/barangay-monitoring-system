@@ -43,6 +43,8 @@ export const schema = createSchema<GraphQLContext>({
       municipality: String
       postal_code: String
       province: String
+      latitude: Float
+      longitude: Float
       created_at: String!
       updated_at: String!
     }
@@ -56,6 +58,8 @@ export const schema = createSchema<GraphQLContext>({
       postal_code: String
       municipality: String
       province: String
+      latitude: Float
+      longitude: Float
     }
 
     type Resident {
@@ -472,6 +476,8 @@ export const schema = createSchema<GraphQLContext>({
             municipality: validatedInput.municipality,
             postal_code: validatedInput.postal_code,
             province: validatedInput.province,
+            latitude: validatedInput.latitude ?? null,
+            longitude: validatedInput.longitude ?? null,
           })
           .select()
           .single();
@@ -520,6 +526,12 @@ export const schema = createSchema<GraphQLContext>({
             }),
             ...(validatedInput.postal_code !== undefined && {
               postal_code: validatedInput.postal_code,
+            }),
+            ...(validatedInput.latitude !== undefined && {
+              latitude: validatedInput.latitude,
+            }),
+            ...(validatedInput.longitude !== undefined && {
+              longitude: validatedInput.longitude,
             }),
           })
           .eq("id", id)

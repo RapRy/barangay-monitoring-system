@@ -28,21 +28,21 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         disabled={disabled || loading}
         className={cn(
-          "inline-flex h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/30",
-          "disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--primary)/30",
+          "disabled:pointer-events-none disabled:opacity-55",
 
           variant === "primary" &&
-            "bg-[var(--primary)] text-white hover:opacity-90",
+            "bg-(--primary) text-(--primary-foreground) shadow-sm hover:brightness-95 active:brightness-90",
 
           variant === "secondary" &&
-            "bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:bg-slate-200",
+            "bg-(--secondary) text-(--secondary-foreground) shadow-sm hover:brightness-95 active:brightness-90",
 
           variant === "outline" &&
-            "border border-[var(--border)] bg-white hover:bg-slate-50",
+            "border border-(--border-strong) bg-(--surface) text-(--foreground) shadow-sm hover:bg-(--surface-muted) hover:border-(--primary)",
 
           variant === "danger" &&
-            "bg-[var(--danger)] text-white hover:opacity-90",
+            "bg-(--danger) text-white shadow-sm hover:bg-(--danger-hover) active:brightness-90",
 
           className,
         )}

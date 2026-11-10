@@ -49,11 +49,11 @@ function SummaryCard({
   return (
     <Link
       href={href}
-      className="rounded-xl border bg-white p-5 transition-shadow hover:shadow-sm"
+      className="app-panel block p-5 transition-transform hover:-translate-y-0.5"
     >
-      <p className="text-sm text-slate-500">{label}</p>
+      <p className="text-sm text-(--muted)">{label}</p>
       <p className={`mt-2 text-3xl font-semibold ${accent}`}>{value}</p>
-      <p className="mt-1 text-xs text-slate-500">{hint}</p>
+      <p className="mt-1 text-xs text-(--muted)">{hint}</p>
     </Link>
   );
 }
@@ -107,6 +107,38 @@ export default function HomePage() {
     [cases, today],
   );
 
+  const statusChart = [
+    { label: "Open", status: "OPEN", color: "var(--primary)" },
+    { label: "In progress", status: "IN_PROGRESS", color: "var(--info)" },
+    { label: "Resolved", status: "RESOLVED", color: "var(--success)" },
+    { label: "Closed", status: "CLOSED", color: "var(--muted)" },
+  ].map((item) => ({
+    ...item,
+    count: cases.filter((record) => record.status === item.status).length,
+  }));
+
+  const maxStatusCount = Math.max(1, ...statusChart.map((item) => item.count));
+
+  const monthlyRequests = Array.from({ length: 6 }, (_, index) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setMonth(date.getMonth() - (5 - index));
+
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+
+    return {
+      key,
+      label: date.toLocaleDateString(undefined, { month: "short" }),
+      count: cases.filter((record) => record.reported_at.startsWith(key))
+        .length,
+    };
+  });
+
+  const maxMonthlyCount = Math.max(
+    1,
+    ...monthlyRequests.map((item) => item.count),
+  );
+
   const recentCases = useMemo(
     () =>
       [...cases]
@@ -146,7 +178,7 @@ export default function HomePage() {
     return (
       <main className="p-6">
         <PageHeader title="Overview" />
-        <p className="text-sm text-[var(--danger)]">
+        <p className="text-sm text-(--danger)">
           {loadError instanceof Error
             ? loadError.message
             : "Unable to load overview data."}
@@ -156,7 +188,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="space-y-6 p-6">
+    <main className="space-y-5 p-5 sm:p-6">
       <PageHeader
         title="Overview"
         description="A current snapshot of households, residents, surveys, and assistance."
@@ -171,28 +203,28 @@ export default function HomePage() {
           value={households.length}
           hint="Registered households"
           href="/households"
-          accent="text-teal-700"
+          accent="text-(--primary)"
         />
         <SummaryCard
           label="Residents"
           value={residents.length}
           hint="Registered residents"
           href="/residents"
-          accent="text-blue-700"
+          accent="text-(--primary)"
         />
         <SummaryCard
           label="Open requests"
           value={metrics.openCases}
           hint="Waiting to be reviewed"
           href="/assistance"
-          accent="text-blue-700"
+          accent="text-(--primary)"
         />
         <SummaryCard
           label="In progress"
           value={metrics.inProgressCases}
           hint="Currently being handled"
           href="/assistance"
-          accent="text-amber-700"
+          accent="text-(--info)"
         />
       </section>
 
@@ -202,48 +234,116 @@ export default function HomePage() {
           value={metrics.overdueCases}
           hint="Active requests past their follow-up date"
           href="/assistance"
-          accent="text-red-700"
+          accent="text-(--danger)"
         />
         <SummaryCard
           label="Urgent requests"
           value={metrics.urgentCases}
           hint="Active requests marked urgent"
           href="/assistance"
-          accent="text-orange-700"
+          accent="text-(--warning)"
         />
         <SummaryCard
           label="Surveys recorded"
           value={surveys.length}
           hint="Survey records across households"
           href="/surveys"
-          accent="text-emerald-700"
+          accent="text-(--success)"
         />
       </section>
 
+      <section
+        aria-label="Assistance charts"
+        className="grid gap-5 xl:grid-cols-2"
+      >
+        <div className="app-panel p-5">
+          <h2 className="font-semibold">Requests by status</h2>
+          <p className="mt-1 text-sm text-(--muted)">
+            Current distribution of assistance records
+          </p>
+
+          <div className="mt-6 space-y-4">
+            {statusChart.map((item) => (
+              <div key={item.status}>
+                <div className="mb-1.5 flex justify-between text-sm">
+                  <span>{item.label}</span>
+                  <span className="font-medium">{item.count}</span>
+                </div>
+                <div
+                  className="h-2.5 overflow-hidden rounded-full bg-(--surface-muted)"
+                  role="img"
+                  aria-label={`${item.label}: ${item.count} requests`}
+                >
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${(item.count / maxStatusCount) * 100}%`,
+                      backgroundColor: item.color,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="app-panel p-5">
+          <h2 className="font-semibold">Requests over time</h2>
+          <p className="mt-1 text-sm text-(--muted)">
+            Reported assistance requests over the last six months
+          </p>
+
+          <div
+            className="mt-6 grid h-44 grid-cols-6 items-end gap-3"
+            role="img"
+            aria-label="Monthly assistance requests for the last six months"
+          >
+            {monthlyRequests.map((item) => (
+              <div
+                key={item.key}
+                className="flex h-full flex-col items-center justify-end gap-2"
+                title={`${item.label}: ${item.count} requests`}
+              >
+                <span className="text-xs text-(--muted)">{item.count}</span>
+                <div className="flex h-32 w-full items-end rounded-t-lg bg-(--surface-muted)">
+                  <div
+                    className="w-full rounded-t-lg bg-(--primary)"
+                    style={{
+                      height: `${item.count === 0 ? 0 : Math.max((item.count / maxMonthlyCount) * 100, 8)}%`,
+                    }}
+                  />
+                </div>
+                <span className="text-xs text-(--muted)">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="grid gap-6 xl:grid-cols-2">
-        <div className="overflow-x-auto rounded-xl border bg-white">
-          <div className="flex items-center justify-between border-b px-4 py-4">
+        <div className="app-panel overflow-x-auto">
+          <div className="flex items-center justify-between px-5 py-4">
             <div>
               <h2 className="font-semibold">Recent assistance requests</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-(--muted)">
                 The five latest reported requests
               </p>
             </div>
             <Link
               href="/assistance"
-              className="text-sm font-medium text-[var(--primary)] hover:underline"
+              className="text-sm font-medium text-(--primary) hover:underline"
             >
               View all
             </Link>
           </div>
 
           {recentCases.length === 0 ? (
-            <p className="p-5 text-sm text-slate-500">
+            <p className="p-5 text-sm text-(--muted)">
               No assistance requests have been recorded.
             </p>
           ) : (
-            <table className="w-full min-w-[600px] text-left text-sm">
-              <thead className="bg-slate-50 text-slate-600">
+            <table className="w-full min-w-150 text-left text-sm">
+              <thead className="bg-(--surface-muted) text-(--muted)">
                 <tr>
                   <th className="px-4 py-3 font-medium">Request</th>
                   <th className="px-4 py-3 font-medium">Resident</th>
@@ -278,29 +378,29 @@ export default function HomePage() {
           )}
         </div>
 
-        <div className="overflow-x-auto rounded-xl border bg-white">
-          <div className="flex items-center justify-between border-b px-4 py-4">
+        <div className="app-panel overflow-x-auto">
+          <div className="flex items-center justify-between px-5 py-4">
             <div>
               <h2 className="font-semibold">Recent surveys</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-(--muted)">
                 The five latest survey records
               </p>
             </div>
             <Link
               href="/surveys"
-              className="text-sm font-medium text-[var(--primary)] hover:underline"
+              className="text-sm font-medium text-(--primary) hover:underline"
             >
               View all
             </Link>
           </div>
 
           {recentSurveys.length === 0 ? (
-            <p className="p-5 text-sm text-slate-500">
+            <p className="p-5 text-sm text-(--muted)">
               No surveys have been recorded.
             </p>
           ) : (
-            <table className="w-full min-w-[500px] text-left text-sm">
-              <thead className="bg-slate-50 text-slate-600">
+            <table className="w-full min-w-125 text-left text-sm">
+              <thead className="bg-(--surface-muted) text-(--muted)">
                 <tr>
                   <th className="px-4 py-3 font-medium">Household</th>
                   <th className="px-4 py-3 font-medium">Survey date</th>
@@ -333,7 +433,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="rounded-xl border bg-white p-5">
+      <section className="app-panel p-5">
         <h2 className="font-semibold">Quick links</h2>
         <div className="mt-4 flex flex-wrap gap-3">
           {[
@@ -346,7 +446,7 @@ export default function HomePage() {
             <Link
               key={item.href}
               href={item.href}
-              className="inline-flex h-10 items-center rounded-lg border border-[var(--border)] px-4 text-sm font-medium hover:bg-slate-50"
+              className="inline-flex h-10 items-center rounded-lg bg-(--surface-muted) px-4 text-sm font-medium text-(--foreground) transition-colors hover:bg-(--accent) hover:text-(--accent-foreground)"
             >
               {item.label}
             </Link>

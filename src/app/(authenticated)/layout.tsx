@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/app/_lib/supabase/server";
 import { AppShell } from "@/app/_components/layout/app-shell";
 
+import "leaflet/dist/leaflet.css";
+
 export default async function AuthenticatedLayout({
   children,
 }: Readonly<{

@@ -9,6 +9,8 @@ export interface Household {
   municipality: string;
   created_at: string;
   province: string;
+  latitude: number | null;
+  longitude: number | null;
   updated_at: string;
 }
 export const GET_HOUSEHOLDS = `
@@ -23,6 +25,8 @@ export const GET_HOUSEHOLDS = `
         barangay
         municipality
         province
+        latitude
+        longitude
         created_at
         updated_at
     }
@@ -41,6 +45,8 @@ export const GET_HOUSEHOLD_BY_CODE = `
       barangay
       municipality
       province
+      latitude
+longitude
       created_at
       updated_at
     }

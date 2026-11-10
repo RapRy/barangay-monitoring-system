@@ -12,6 +12,10 @@ const navigation = [
     href: "/",
   },
   {
+    label: "Barangay Map",
+    href: "/map",
+  },
+  {
     label: "Households",
     href: "/households",
   },
@@ -47,7 +51,7 @@ export function MobileNav() {
         type="button"
         aria-label="Open navigation"
         onClick={() => setOpen(true)}
-        className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+        className="rounded-xl p-2 text-(--muted) hover:bg-(--surface-muted) lg:hidden"
       >
         <svg
           width="22"
@@ -74,12 +78,12 @@ export function MobileNav() {
             onClick={() => setOpen(false)}
           />
 
-          <aside className="relative h-full w-72 bg-white shadow-xl">
-            <div className="flex h-16 items-center justify-between border-b border-[var(--border)] px-5">
+          <aside className="relative h-full w-72 bg-(--surface) shadow-xl">
+            <div className="flex h-16 items-center justify-between px-5">
               <div>
                 <p className="font-semibold">Barangay Monitoring</p>
 
-                <p className="text-xs text-[var(--muted)]">
+                <p className="text-xs text-(--muted)">
                   Community Information System
                 </p>
               </div>
@@ -88,7 +92,7 @@ export function MobileNav() {
                 type="button"
                 aria-label="Close navigation"
                 onClick={() => setOpen(false)}
-                className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+                className="rounded-xl p-2 text-(--muted) hover:bg-(--surface-muted)"
               >
                 <svg
                   width="20"
@@ -113,10 +117,10 @@ export function MobileNav() {
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "block rounded-lg px-3 py-3 text-sm font-medium",
+                      "block rounded-xl px-3 py-3 text-sm font-medium transition-colors",
                       active
-                        ? "bg-teal-50 text-[var(--primary)]"
-                        : "text-slate-600 hover:bg-slate-50",
+                        ? "bg-(--accent) text-(--accent-foreground)"
+                        : "text-(--muted) hover:bg-(--surface-muted) hover:text-(--foreground)",
                     )}
                   >
                     {item.label}

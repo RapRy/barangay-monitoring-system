@@ -10,6 +10,10 @@ const navigation = [
     href: "/",
   },
   {
+    label: "Barangay Map",
+    href: "/map",
+  },
+  {
     label: "Households",
     href: "/households",
   },
@@ -39,14 +43,17 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-64 shrink-0 border-r border-[var(--border)] bg-white lg:block">
-      <div className="flex h-16 items-center border-b border-[var(--border)] px-6">
+    <aside className="hidden w-64 shrink-0 bg-(--surface) lg:block">
+      <div className="flex h-16 items-center px-6">
+        <div className="mr-3 grid h-9 w-9 grid-cols-2 gap-1 rounded-xl bg-(--accent) p-2">
+          <span className="rounded-sm bg-(--primary)" />
+          <span className="rounded-sm bg-(--primary) opacity-70" />
+          <span className="rounded-sm bg-(--primary) opacity-70" />
+          <span className="rounded-sm bg-(--primary)" />
+        </div>
         <div>
-          <p className="font-semibold">Barangay Monitoring</p>
-
-          <p className="text-xs text-[var(--muted)]">
-            Community Information System
-          </p>
+          <p className="font-semibold tracking-tight">Barangay Monitoring</p>
+          <p className="text-xs text-(--muted)">Community Information System</p>
         </div>
       </div>
 
@@ -59,10 +66,10 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "block rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
-                  ? "bg-teal-50 text-[var(--primary)]"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                  ? "bg-(--accent) text-(--accent-foreground)"
+                  : "text-(--muted) hover:bg-(--surface-muted) hover:text-(--foreground)",
               )}
             >
               {item.label}

@@ -9,7 +9,7 @@ interface HeaderProps {
 
 export function Header({ email }: HeaderProps) {
   return (
-    <header className="flex h-16 items-center border-b border-[var(--border)] bg-white px-4 sm:px-6">
+    <header className="flex h-16 items-center bg-(--surface) px-4 sm:px-6">
       <div className="lg:hidden">
         <MobileNav />
       </div>
@@ -20,7 +20,7 @@ export function Header({ email }: HeaderProps) {
 
       <div className="ml-auto flex items-center gap-3">
         {email && (
-          <span className="hidden text-sm text-[var(--muted)] sm:block">
+          <span className="hidden text-sm text-(--muted) sm:block">
             {email}
           </span>
         )}

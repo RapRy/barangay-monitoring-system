@@ -3,6 +3,8 @@ export const CREATE_HOUSEHOLD = `
     createHousehold(input: $input) {
       id
       household_code
+      latitude
+      longitude
       address
       purok
       barangay
@@ -25,6 +27,8 @@ export const UPDATE_HOUSEHOLD = `
     ) {
       id
       household_code
+      latitude
+      longitude
       address
       purok
       barangay

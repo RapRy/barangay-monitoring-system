@@ -1,33 +1,122 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-
-  --primary: #0f766e;
+  /* Brand */
+  --background: #f0f5fb;
+  --foreground: #182230;
+  --primary: #2782f6;
   --primary-foreground: #ffffff;
+  --accent: #eaf3ff;
+  --accent-foreground: #1974e8;
 
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-
-  --muted: #64748b;
-  --border: #e2e8f0;
-
-  --success: #16a34a;
-  --warning: #d97706;
-  --danger: #dc2626;
-  --info: #2563eb;
-
+  /* Surfaces */
   --surface: #ffffff;
+  --surface-muted: #f7f9fc;
+  --secondary: #e4efff;
+  --secondary-foreground: #1f4f91;
+  --muted: #8792a2;
+  --border: #e8eef6;
+  --border-strong: #cbd8e8;
+
+  /* Feedback */
+  --success: #2eaa77;
+  --warning: #e5a528;
+  --danger: #e53946;
+  --danger-hover: #c92836;
+  --info: #2782f6;
+
+  /* Shape and elevation */
+  --radius-card: 1rem;
+  --shadow-card: 0 8px 26px rgb(36 65 105 / 6%);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+  background: var(--background);
+}
+
 body {
+  min-height: 100vh;
   margin: 0;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  color: var(--foreground);
+  background: #dceaff;
+}
+
+/* Shared building blocks for current and future pages */
+.app-panel {
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.app-panel-muted {
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--surface-muted);
+}
+
+.app-accent {
+  color: var(--accent-foreground);
+  background: var(--accent);
+  border: 0;
+  border-radius: 0.75rem;
+}
+
+.app-control {
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--surface-muted);
+  color: var(--foreground);
+  padding-inline: 1rem;
+}
+
+.app-control:focus-visible {
+  outline: 2px solid rgb(39 130 246 / 28%);
+  outline-offset: 1px;
+}
+
+.app-panel-header {
+  border: 0;
+  background: var(--surface);
+}
+
+.app-table-row {
+  border-color: #edf1f6;
+}
+
+/* Bring legacy page markup onto the shared blue-white design system. */
+.app-content main .rounded-xl.border {
+  border: 0;
+  border-radius: var(--radius-card);
+  background-color: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.app-content main [class~="bg-slate-50"] {
+  background-color: var(--surface-muted);
+}
+
+.app-content main [class~="text-slate-500"],
+.app-content main [class~="text-slate-600"] {
+  color: var(--muted);
 }

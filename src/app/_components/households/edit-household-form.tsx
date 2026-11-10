@@ -26,7 +26,23 @@ const validationSchema = Yup.object({
   municipality: Yup.string().trim().required("Municipality is required."),
   province: Yup.string().trim().required("Province is required."),
   postal_code: Yup.string().trim().required("Postal code is required."),
-});
+  latitude: Yup.number()
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
+    .nullable()
+    .notRequired()
+    .min(-90, "Latitude must be between -90 and 90.")
+    .max(90, "Latitude must be between -90 and 90."),
+  longitude: Yup.number()
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
+    .nullable()
+    .notRequired()
+    .min(-180, "Longitude must be between -180 and 180.")
+    .max(180, "Longitude must be between -180 and 180."),
+}).test(
+  "coordinate-pair",
+  "Enter both coordinates or leave both blank.",
+  (values) => (values?.latitude == null) === (values?.longitude == null),
+);
 
 export default function EditHouseholdForm({
   household,
@@ -46,13 +62,20 @@ export default function EditHouseholdForm({
       municipality: household.municipality ?? "",
       province: household.province ?? "",
       postal_code: household.postal_code ?? "",
+      latitude: household.latitude?.toString() ?? "",
+      longitude: household.longitude?.toString() ?? "",
     },
     validationSchema,
     onSubmit: async (values) => {
       try {
         await updateHousehold.mutateAsync({
           id: household.id,
-          input: values,
+          input: {
+            ...values,
+            latitude: values.latitude === "" ? null : Number(values.latitude),
+            longitude:
+              values.longitude === "" ? null : Number(values.longitude),
+          },
         });
 
         onSuccess?.();
@@ -144,6 +167,32 @@ export default function EditHouseholdForm({
               )}
             />
           </FormField>
+          <FormField name="latitude" label="Latitude">
+            <Input
+              id="latitude"
+              type="number"
+              step="0.000001"
+              min="-90"
+              max="90"
+              {...formik.getFieldProps("latitude")}
+            />
+          </FormField>
+
+          <FormField name="longitude" label="Longitude">
+            <Input
+              id="longitude"
+              type="number"
+              step="0.000001"
+              min="-180"
+              max="180"
+              {...formik.getFieldProps("longitude")}
+            />
+          </FormField>
+
+          <p className="text-xs text-slate-500 md:col-span-2">
+            Enter both coordinates to place this household on the map, or leave
+            both blank.
+          </p>
         </div>
 
         <div className="flex justify-end gap-3 border-t pt-4">

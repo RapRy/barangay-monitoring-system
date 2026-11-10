@@ -16,6 +16,8 @@ interface CreateHouseholdInput {
   barangay: string;
   municipality: string;
   province: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 interface CreateHouseholdResponse {
