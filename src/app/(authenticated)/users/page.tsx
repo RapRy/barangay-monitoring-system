@@ -113,7 +113,7 @@ export default async function UserAccessPage() {
               {(profiles ?? []).map((profile) => (
                 <tr
                   key={profile.id}
-                  className="border-t border-(--border) align-middle"
+                  className="app-table-row border-t border-(--table-border) align-middle"
                 >
                   <td className="px-4 py-3 text-(--foreground)">
                     {profile.full_name || "Unnamed user"}

@@ -360,7 +360,7 @@ export default function AssistancePage() {
         <section className="rounded-xl border bg-white p-4 sm:p-5">
           <nav
             aria-label="Assistance request status"
-            className="flex gap-2 overflow-x-auto border-b pb-3"
+            className="flex gap-2 overflow-x-auto border-b pb-3  border-(--table-border)"
           >
             {queueTabs.map((item) => (
               <button

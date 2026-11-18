@@ -3,20 +3,21 @@
 :root {
   /* Brand */
   --background: #f0f5fb;
-  --foreground: #182230;
-  --primary: #2782f6;
+  --foreground: #1b263b;
+  --primary: #4361ee;
   --primary-foreground: #ffffff;
-  --accent: #eaf3ff;
-  --accent-foreground: #1974e8;
+  --accent: #f4f8fa;
+  --accent-foreground: #00afb9;
 
   /* Surfaces */
   --surface: #ffffff;
   --surface-muted: #f7f9fc;
-  --secondary: #e4efff;
-  --secondary-foreground: #1f4f91;
-  --muted: #8792a2;
+  --secondary: #1a759f;
+  --secondary-foreground: #f7f9fc;
+  --muted: #415a77;
   --border: #e8eef6;
   --border-strong: #cbd8e8;
+  --table-border: #ced4da;
 
   /* Feedback */
   --success: #2eaa77;
@@ -60,6 +61,18 @@ textarea {
   background: #dceaff;
 }
 
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 20 20'%3E%3Cpath d='m6 8 4 4 4-4' fill='none' stroke='%23415a77' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.5rem;
+  padding-right: 2.25rem;
+}
+
 /* Shared building blocks for current and future pages */
 .app-panel {
   border: 0;
@@ -101,7 +114,7 @@ textarea {
 }
 
 .app-table-row {
-  border-color: #edf1f6;
+  border-color: var(--table-border);
 }
 
 /* Bring legacy page markup onto the shared blue-white design system. */
@@ -119,4 +132,16 @@ textarea {
 .app-content main [class~="text-slate-500"],
 .app-content main [class~="text-slate-600"] {
   color: var(--muted);
+}
+
+.app-content table thead {
+  border-bottom: 1px solid var(--table-border);
+}
+
+.app-content table tbody {
+  border-top: 1px solid var(--table-border);
+}
+
+.app-content table tbody tr {
+  border-bottom: 1px solid var(--table-border);
 }
