@@ -39,13 +39,34 @@ export default function LoginForm() {
   ) {
     setServerError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     });
 
     if (error) {
       setServerError(error.message);
+      setSubmitting(false);
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("is_active")
+      .eq("id", data.user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      await supabase.auth.signOut();
+      setServerError("Unable to verify account activation. Please try again.");
+      setSubmitting(false);
+      return;
+    }
+
+    if (!profile?.is_active) {
+      await supabase.auth.signOut();
+      router.replace("/account-pending");
+      router.refresh();
       setSubmitting(false);
       return;
     }

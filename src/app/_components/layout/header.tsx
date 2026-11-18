@@ -5,13 +5,14 @@ import { LogoutButton } from "./logout-button";
 
 interface HeaderProps {
   email?: string;
+  isAdmin?: boolean;
 }
 
-export function Header({ email }: HeaderProps) {
+export function Header({ email, isAdmin = false }: HeaderProps) {
   return (
     <header className="flex h-16 items-center bg-(--surface) px-4 sm:px-6">
       <div className="lg:hidden">
-        <MobileNav />
+        <MobileNav isAdmin={isAdmin} />
       </div>
 
       <div className="ml-3 lg:hidden">

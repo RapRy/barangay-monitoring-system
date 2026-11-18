@@ -6,44 +6,23 @@ import { useState } from "react";
 
 import { cn } from "@/app/_lib/utils/cn";
 
-const navigation = [
-  {
-    label: "Dashboard",
-    href: "/",
-  },
-  {
-    label: "Barangay Map",
-    href: "/map",
-  },
-  {
-    label: "Households",
-    href: "/households",
-  },
-  {
-    label: "Residents",
-    href: "/residents",
-  },
-  {
-    label: "Surveys",
-    href: "/surveys",
-  },
-  {
-    label: "Cases",
-    href: "/cases",
-  },
-  {
-    label: "Assistance",
-    href: "/assistance",
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-  },
+const baseNavigation = [
+  { label: "Dashboard", href: "/" },
+  { label: "Barangay Map", href: "/map" },
+  { label: "Households", href: "/households" },
+  { label: "Residents", href: "/residents" },
+  { label: "Surveys", href: "/surveys" },
+  { label: "Cases", href: "/cases" },
+  { label: "Assistance", href: "/assistance" },
+  { label: "Reports", href: "/reports" },
 ];
 
-export function MobileNav() {
+export function MobileNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const navigation = isAdmin
+    ? [...baseNavigation, { label: "Users", href: "/users" }]
+    : baseNavigation;
 
   return (
     <>
@@ -82,7 +61,6 @@ export function MobileNav() {
             <div className="flex h-16 items-center justify-between px-5">
               <div>
                 <p className="font-semibold">Barangay Monitoring</p>
-
                 <p className="text-xs text-(--muted)">
                   Community Information System
                 </p>
@@ -109,7 +87,9 @@ export function MobileNav() {
 
             <nav className="space-y-1 p-4">
               {navigation.map((item) => {
-                const active = pathname === item.href;
+                const active =
+                  pathname === item.href ||
+                  pathname.startsWith(`${item.href}/`);
 
                 return (
                   <Link

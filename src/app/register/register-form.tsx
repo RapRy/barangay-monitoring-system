@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-import { createClient } from "@/app/lib/supabase/client";
+import { createClient } from "../_lib/supabase/client";
 
 interface RegisterFormValues {
   fullName: string;
@@ -45,7 +45,7 @@ export function RegisterForm() {
       setErrorMessage("");
 
       try {
-        const { error } = await supabase.auth.signUp({
+        const { error, data } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
           options: { data: { full_name: values.fullName } },
@@ -56,8 +56,12 @@ export function RegisterForm() {
           return;
         }
 
+        if (data.session) {
+          await supabase.auth.signOut();
+        }
+
         setSuccessMessage(
-          "Account created successfully. Please check your email to verify your account."
+          "Registration received. Please wait for an administrator to activate your account.",
         );
         resetForm();
       } catch {
@@ -133,7 +137,9 @@ export function RegisterForm() {
           disabled={disabled}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          className={inputClass(Boolean(formik.touched.fullName && formik.errors.fullName))}
+          className={inputClass(
+            Boolean(formik.touched.fullName && formik.errors.fullName),
+          )}
         />
         <FormInput
           id="email"
@@ -145,7 +151,9 @@ export function RegisterForm() {
           disabled={disabled}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          className={inputClass(Boolean(formik.touched.email && formik.errors.email))}
+          className={inputClass(
+            Boolean(formik.touched.email && formik.errors.email),
+          )}
         />
         <FormInput
           id="password"
@@ -157,7 +165,9 @@ export function RegisterForm() {
           disabled={disabled}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          className={inputClass(Boolean(formik.touched.password && formik.errors.password))}
+          className={inputClass(
+            Boolean(formik.touched.password && formik.errors.password),
+          )}
         />
         <FormInput
           id="confirmPassword"
@@ -165,20 +175,34 @@ export function RegisterForm() {
           type="password"
           placeholder="Re-enter your password"
           value={formik.values.confirmPassword}
-          error={formik.touched.confirmPassword ? formik.errors.confirmPassword : undefined}
+          error={
+            formik.touched.confirmPassword
+              ? formik.errors.confirmPassword
+              : undefined
+          }
           disabled={disabled}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          className={inputClass(Boolean(formik.touched.confirmPassword && formik.errors.confirmPassword))}
+          className={inputClass(
+            Boolean(
+              formik.touched.confirmPassword && formik.errors.confirmPassword,
+            ),
+          )}
         />
 
         {errorMessage && (
-          <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+          >
             {errorMessage}
           </div>
         )}
         {successMessage && (
-          <div role="status" className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+          <div
+            role="status"
+            className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700"
+          >
             {successMessage}
           </div>
         )}
@@ -188,7 +212,9 @@ export function RegisterForm() {
           disabled={disabled}
           className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 text-sm font-medium text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/30 disabled:pointer-events-none disabled:opacity-60"
         >
-          {formik.isSubmitting && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/50 border-t-white" />}
+          {formik.isSubmitting && (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/50 border-t-white" />
+          )}
           {formik.isSubmitting ? "Creating account..." : "Create account"}
         </button>
       </form>
@@ -209,14 +235,34 @@ interface FormInputProps {
   onBlur: React.FocusEventHandler<HTMLInputElement>;
 }
 
-function FormInput({ id, label, type = "text", error, ...props }: FormInputProps) {
+function FormInput({
+  id,
+  label,
+  type = "text",
+  error,
+  ...props
+}: FormInputProps) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-[var(--foreground)]">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-sm font-medium text-[var(--foreground)]"
+      >
         {label}
       </label>
-      <input id={id} name={id} type={type} aria-invalid={Boolean(error)} aria-describedby={error ? `${id}-error` : undefined} {...props} />
-      {error && <p id={`${id}-error`} className="mt-1 text-xs text-[var(--danger)]">{error}</p>}
+      <input
+        id={id}
+        name={id}
+        type={type}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${id}-error` : undefined}
+        {...props}
+      />
+      {error && (
+        <p id={`${id}-error`} className="mt-1 text-xs text-[var(--danger)]">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -224,10 +270,22 @@ function FormInput({ id, label, type = "text", error, ...props }: FormInputProps
 function GoogleIcon() {
   return (
     <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24">
-      <path fill="#4285F4" d="M21.35 12.27c0-.78-.07-1.53-.2-2.24H12v4.24h5.23a4.47 4.47 0 0 1-1.94 2.93v2.75h3.15c1.84-1.7 2.91-4.2 2.91-7.68Z" />
-      <path fill="#34A853" d="M12 21.75c2.62 0 4.82-.87 6.44-2.36l-3.15-2.75c-.87.59-1.99.94-3.29.94-2.53 0-4.67-1.71-5.44-4.01H3.3v2.84A9.73 9.73 0 0 0 12 21.75Z" />
-      <path fill="#FBBC05" d="M6.56 13.57A5.86 5.86 0 0 1 6.25 12c0-.55.1-1.08.31-1.57V7.59H3.3A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.41l3.26-2.84Z" />
-      <path fill="#EA4335" d="M12 6.42c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.82 3.51 14.62 2.25 12 2.25A9.73 9.73 0 0 0 3.3 7.59l3.26 2.84C7.33 8.13 9.47 6.42 12 6.42Z" />
+      <path
+        fill="#4285F4"
+        d="M21.35 12.27c0-.78-.07-1.53-.2-2.24H12v4.24h5.23a4.47 4.47 0 0 1-1.94 2.93v2.75h3.15c1.84-1.7 2.91-4.2 2.91-7.68Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 21.75c2.62 0 4.82-.87 6.44-2.36l-3.15-2.75c-.87.59-1.99.94-3.29.94-2.53 0-4.67-1.71-5.44-4.01H3.3v2.84A9.73 9.73 0 0 0 12 21.75Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M6.56 13.57A5.86 5.86 0 0 1 6.25 12c0-.55.1-1.08.31-1.57V7.59H3.3A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.41l3.26-2.84Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 6.42c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.82 3.51 14.62 2.25 12 2.25A9.73 9.73 0 0 0 3.3 7.59l3.26 2.84C7.33 8.13 9.47 6.42 12 6.42Z"
+      />
     </svg>
   );
 }

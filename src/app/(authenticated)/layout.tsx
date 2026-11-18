@@ -20,5 +20,23 @@ export default async function AuthenticatedLayout({
     redirect("/login");
   }
 
-  return <AppShell email={user.email}>{children}</AppShell>;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_active")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!profile?.is_active) {
+    await supabase.auth.signOut();
+    redirect("/account-pending");
+  }
+
+  const { data: role } = await supabase.rpc("get_user_role");
+  const isAdmin = role === "admin";
+
+  return (
+    <AppShell email={user.email} isAdmin={isAdmin}>
+      {children}
+    </AppShell>
+  );
 }

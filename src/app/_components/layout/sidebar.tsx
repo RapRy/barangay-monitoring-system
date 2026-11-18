@@ -4,43 +4,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/app/_lib/utils/cn";
 
-const navigation = [
-  {
-    label: "Dashboard",
-    href: "/",
-  },
-  {
-    label: "Barangay Map",
-    href: "/map",
-  },
-  {
-    label: "Households",
-    href: "/households",
-  },
-  {
-    label: "Residents",
-    href: "/residents",
-  },
-  {
-    label: "Surveys",
-    href: "/surveys",
-  },
-  {
-    label: "Cases",
-    href: "/cases",
-  },
-  {
-    label: "Assistance",
-    href: "/assistance",
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-  },
+const baseNavigation = [
+  { label: "Dashboard", href: "/" },
+  { label: "Barangay Map", href: "/map" },
+  { label: "Households", href: "/households" },
+  { label: "Residents", href: "/residents" },
+  { label: "Surveys", href: "/surveys" },
+  { label: "Cases", href: "/cases" },
+  { label: "Assistance", href: "/assistance" },
+  { label: "Reports", href: "/reports" },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
+  const navigation = isAdmin
+    ? [...baseNavigation, { label: "Users", href: "/users" }]
+    : baseNavigation;
 
   return (
     <aside className="hidden w-64 shrink-0 bg-(--surface) lg:block">
@@ -59,7 +38,8 @@ export function Sidebar() {
 
       <nav className="space-y-1 p-4">
         {navigation.map((item) => {
-          const active = pathname === item.href;
+          const active =
+            pathname === item.href || pathname.startsWith(`${item.href}/`);
 
           return (
             <Link
