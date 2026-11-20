@@ -50,22 +50,65 @@ const yoga = createYoga({
   },
 });
 
-export async function GET(request: Request) {
-  const response = await yoga.fetch(request);
+async function handleGraphQLRequest(request: Request): Promise<Response> {
+  const result = await yoga.fetch(request);
 
-  if (!(response instanceof Response)) {
-    throw new Error("GraphQL GET handler did not return a Response.");
+  if (typeof result === "string") {
+    return new Response(result, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
   }
 
-  return response;
+  if (result && typeof result === "object") {
+    const candidate = result as {
+      status?: number;
+      statusText?: string;
+      headers?: Headers;
+      text?: () => Promise<string>;
+      json?: () => Promise<unknown>;
+    };
+
+    if (typeof candidate.text === "function") {
+      const text = await candidate.text();
+      const headers = new Headers();
+
+      candidate.headers?.forEach((value, key) => {
+        headers.set(key, value);
+      });
+
+      return new Response(text, {
+        status: candidate.status ?? 200,
+        statusText: candidate.statusText,
+        headers,
+      });
+    }
+  }
+
+  return new Response(
+    JSON.stringify({
+      errors: [
+        {
+          message: "Unexpected GraphQL response.",
+          extensions: { code: "INTERNAL_SERVER_ERROR" },
+        },
+      ],
+    }),
+    {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+  );
 }
 
-export async function POST(request: Request) {
-  const response = await yoga.fetch(request);
+export function GET(request: Request) {
+  return handleGraphQLRequest(request);
+}
 
-  if (!(response instanceof Response)) {
-    throw new Error("GraphQL POST handler did not return a Response.");
-  }
-
-  return response;
+export function POST(request: Request) {
+  return handleGraphQLRequest(request);
 }
