@@ -51,9 +51,21 @@ const yoga = createYoga({
 });
 
 export async function GET(request: Request) {
-  return yoga.fetch(request);
+  const response = await yoga.fetch(request);
+
+  if (!(response instanceof Response)) {
+    throw new Error("GraphQL GET handler did not return a Response.");
+  }
+
+  return response;
 }
 
 export async function POST(request: Request) {
-  return yoga.fetch(request);
+  const response = await yoga.fetch(request);
+
+  if (!(response instanceof Response)) {
+    throw new Error("GraphQL POST handler did not return a Response.");
+  }
+
+  return response;
 }
